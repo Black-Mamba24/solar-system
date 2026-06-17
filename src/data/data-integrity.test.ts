@@ -27,8 +27,44 @@ describe("data integrity", () => {
 
   it("documents texture sources for all textured bodies", () => {
     const assetIds = new Set(assetSources.map((asset) => asset.id));
-    const textured = bodies.filter((body) => body.textureAssetId);
-    expect(textured.every((body) => assetIds.has(body.textureAssetId!))).toBe(true);
+    const missingAssetIds = bodies
+      .filter((body) => body.textureAssetId)
+      .filter((body) => !assetIds.has(body.textureAssetId!))
+      .map((body) => body.id);
+
+    expect(missingAssetIds).toEqual([]);
+  });
+
+  it("keeps asset ids unique", () => {
+    const ids = assetSources.map((asset) => asset.id);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it("keeps asset body ids aligned with existing bodies", () => {
+    const bodyIds = new Set(bodies.map((body) => body.id));
+    const unknownBodyIds = assetSources
+      .filter((asset) => !bodyIds.has(asset.bodyId))
+      .map((asset) => asset.id);
+
+    expect(unknownBodyIds).toEqual([]);
+  });
+
+  it("matches each body texture asset to the same body id", () => {
+    const assetsById = new Map(assetSources.map((asset) => [asset.id, asset]));
+    const mismatchedTextures = bodies
+      .filter((body) => body.textureAssetId)
+      .filter((body) => assetsById.get(body.textureAssetId!)?.bodyId !== body.id)
+      .map((body) => body.id);
+
+    expect(mismatchedTextures).toEqual([]);
+  });
+
+  it("uses local texture paths and secure source urls for assets", () => {
+    const invalidAssets = assetSources
+      .filter((asset) => !asset.localPath.startsWith("/textures/") || !asset.url.startsWith("https://"))
+      .map((asset) => asset.id);
+
+    expect(invalidAssets).toEqual([]);
   });
 
   it("includes basic physical metadata for all non-sun bodies", () => {

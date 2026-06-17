@@ -1,5 +1,34 @@
 import type { Locale } from "@/types/domain";
 
+export interface AppDictionary {
+  languageName: string;
+  switchLanguage: string;
+  comingSoon: string;
+  enterOverview: string;
+  compressedScale: string;
+  overviewTitle: string;
+  controls: {
+    play: string;
+    pause: string;
+    speed: string;
+    camera: string;
+    layers: string;
+    labels: string;
+    orbits: string;
+    moonOrbit: string;
+  };
+  cameraPresets: {
+    full: string;
+    inner: string;
+    earthMoon: string;
+    outer: string;
+  };
+  fallback: {
+    title: string;
+    body: string;
+  };
+}
+
 export const dictionaries = {
   zh: {
     languageName: "中文",
@@ -57,6 +86,6 @@ export const dictionaries = {
       body: "You can still browse body information and asset sources."
     }
   }
-} as const satisfies Record<Locale, object>;
+} as const satisfies Record<Locale, AppDictionary>;
 
-export type Dictionary = typeof dictionaries.zh;
+export type Dictionary = AppDictionary;
