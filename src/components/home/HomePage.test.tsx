@@ -15,8 +15,8 @@ describe("HomePage", () => {
   it("renders all modules and only enables overview", () => {
     render(<HomePage locale="zh" />);
 
-    for (const module of learningModules) {
-      expect(screen.getByText(module.title.zh)).toBeInTheDocument();
+    for (const learningModule of learningModules) {
+      expect(screen.getByText(learningModule.title.zh)).toBeInTheDocument();
     }
 
     expect(screen.getAllByText("即将开放")).toHaveLength(5);

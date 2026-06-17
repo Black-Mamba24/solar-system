@@ -27,7 +27,7 @@ export function ModuleCard({ locale, module }: ModuleCardProps) {
   }
 
   return (
-    <article aria-disabled="true" className="rounded-ui border border-white/10 bg-white/[0.06] p-4 text-left opacity-70">
+    <article data-disabled="true" className="rounded-ui border border-white/10 bg-white/[0.06] p-4 text-left opacity-70">
       <span className="text-xs uppercase tracking-[0.18em] text-slate-400">{dictionaries[locale].comingSoon}</span>
       <h2 className="mt-3 text-xl font-semibold text-white">{title}</h2>
       <p className="mt-2 text-sm leading-6 text-slate-400">{description}</p>
