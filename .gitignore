@@ -4,6 +4,7 @@ out
 coverage
 test-results
 playwright-report
+tsconfig.tsbuildinfo
 .env*
 .DS_Store
 .idea/
