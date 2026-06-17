@@ -1,10 +1,13 @@
 import React from "react";
 import { LanguageSwitch } from "@/components/layout/LanguageSwitch";
 import { learningModules } from "@/data/modules";
+import { dictionaries } from "@/i18n/dictionaries";
 import type { Locale } from "@/types/domain";
 import { ModuleCard } from "./ModuleCard";
 
 export function HomePage({ locale }: { locale: Locale }) {
+  const dictionary = dictionaries[locale];
+
   return (
     <main className="relative min-h-screen overflow-hidden bg-space px-5 py-6 text-white md:px-8">
       <div className="absolute inset-0 bg-[linear-gradient(120deg,rgba(5,7,13,0.95)_0%,rgba(8,15,29,0.92)_48%,rgba(5,7,13,1)_100%)]" />
@@ -12,10 +15,8 @@ export function HomePage({ locale }: { locale: Locale }) {
       <section className="relative z-10 mx-auto flex min-h-[calc(100vh-3rem)] max-w-7xl flex-col">
         <header className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-sm uppercase tracking-[0.22em] text-orbit">Solar System Explorer</p>
-            <h1 className="mt-2 text-3xl font-semibold text-white md:text-5xl">
-              {locale === "zh" ? "太阳系探索" : "Explore the Solar System"}
-            </h1>
+            <p className="text-sm uppercase tracking-[0.22em] text-orbit">{dictionary.brandName}</p>
+            <h1 className="mt-2 text-3xl font-semibold text-white md:text-5xl">{dictionary.homeTitle}</h1>
           </div>
           <LanguageSwitch locale={locale} />
         </header>
@@ -26,9 +27,7 @@ export function HomePage({ locale }: { locale: Locale }) {
             <div className="absolute left-[-2rem] top-1/2 h-[22rem] w-[22rem] -translate-y-1/2 rounded-full border border-white/10 md:h-[34rem] md:w-[34rem]" />
             <div className="absolute left-[-6rem] top-1/2 h-[32rem] w-[32rem] -translate-y-1/2 rounded-full border border-orbit/25 md:h-[48rem] md:w-[48rem]" />
             <div className="absolute left-[-11rem] top-1/2 h-[42rem] w-[42rem] -translate-y-1/2 rounded-full border border-white/10 md:h-[62rem] md:w-[62rem]" />
-            <div className="absolute bottom-5 right-5 max-w-64 text-right text-sm leading-6 text-slate-300">
-              {locale === "zh" ? "从概述模块进入可交互的太阳系轨道视图。" : "Start with the interactive orbital overview module."}
-            </div>
+            <div className="absolute bottom-5 right-5 max-w-64 text-right text-sm leading-6 text-slate-300">{dictionary.homeEntryNote}</div>
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">

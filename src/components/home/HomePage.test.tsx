@@ -2,6 +2,7 @@ import React from "react";
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { learningModules } from "@/data/modules";
+import { dictionaries } from "@/i18n/dictionaries";
 import { HomePage } from "./HomePage";
 
 vi.mock("next/navigation", () => ({
@@ -28,7 +29,8 @@ describe("HomePage", () => {
     render(<HomePage locale="en" />);
 
     expect(screen.getByText("Solar System Overview")).toBeInTheDocument();
-    expect(screen.getByText("Explore the Solar System")).toBeInTheDocument();
+    expect(screen.getByText(dictionaries.en.homeTitle)).toBeInTheDocument();
+    expect(screen.getByText(dictionaries.en.homeEntryNote)).toBeInTheDocument();
     expect(screen.getAllByText("Coming soon")).toHaveLength(5);
   });
 });

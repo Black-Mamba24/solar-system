@@ -1,8 +1,11 @@
 import type { Locale } from "@/types/domain";
 
 export interface AppDictionary {
+  brandName: string;
   languageName: string;
   switchLanguage: string;
+  homeTitle: string;
+  homeEntryNote: string;
   comingSoon: string;
   enterOverview: string;
   compressedScale: string;
@@ -31,8 +34,11 @@ export interface AppDictionary {
 
 export const dictionaries = {
   zh: {
+    brandName: "Solar System Explorer",
     languageName: "中文",
     switchLanguage: "切换语言",
+    homeTitle: "太阳系探索",
+    homeEntryNote: "从概述模块进入可交互的太阳系轨道视图。",
     comingSoon: "即将开放",
     enterOverview: "进入太阳系概述",
     compressedScale: "比例经过教学压缩",
@@ -59,8 +65,11 @@ export const dictionaries = {
     }
   },
   en: {
+    brandName: "Solar System Explorer",
     languageName: "English",
     switchLanguage: "Switch language",
+    homeTitle: "Explore the Solar System",
+    homeEntryNote: "Start with the interactive orbital overview module.",
     comingSoon: "Coming soon",
     enterOverview: "Enter overview",
     compressedScale: "Scale compressed for learning",
