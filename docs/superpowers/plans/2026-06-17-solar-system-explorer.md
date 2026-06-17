@@ -1,89 +1,89 @@
-# Solar System Explorer Implementation Plan
+# 太阳系探索网站实现计划
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **给 agentic worker：** 必须使用 `superpowers:subagent-driven-development`（推荐）或 `superpowers:executing-plans` 按任务执行本计划。步骤使用 checkbox（`- [ ]`）语法跟踪。
 
-**Goal:** Build a production-quality, open-source solar system website with a high-quality 3D overview module, real-source visual assets, Chinese/English switching, and strict architectural layering.
+**目标：** 构建一个生产质量、可开源的太阳系网站，包含高质量 3D 概述模块、真实来源视觉素材、中英文切换和严格架构分层。
 
-**Architecture:** The app is a Next.js TypeScript site with two user-facing routes: `/` and `/overview`. Data, i18n, asset metadata, orbital calculations, URL state, UI components, and 3D rendering are isolated into focused modules so later topics can be added without rewriting the overview module.
+**架构：** 应用是 Next.js TypeScript 网站，面向用户的路由为 `/` 和 `/overview`。数据、i18n、素材元数据、轨道计算、URL 状态、UI 组件和 3D 渲染拆分为职责集中的模块，后续新增专题时不需要重写概述模块。
 
-**Tech Stack:** Next.js, React, TypeScript, Tailwind CSS, Three.js, React Three Fiber, Drei, Motion, Lucide React, Vitest, Testing Library, Playwright.
+**技术栈：** Next.js、React、TypeScript、Tailwind CSS、Three.js、React Three Fiber、Drei、Motion、Lucide React、Vitest、Testing Library、Playwright。
 
 ---
 
-## Source Spec
+## 来源规格
 
-Implement against `docs/superpowers/specs/2026-06-17-太阳系探索网站设计规格.md`.
+实现依据：`docs/superpowers/specs/2026-06-17-太阳系探索网站设计规格.md`。
 
-Non-negotiable constraints:
+不可协商约束：
 
-- Only “Solar System Overview / 太阳系概述” is clickable in v1.
-- The other five home modules are visible but disabled.
-- Planet, moon, and sun imagery must come from documented public sources.
-- The site must support Chinese and English via `?lang=zh` and `?lang=en`.
-- Existing behavior must be protected by tests before later extensions.
-- Follow Karpathy Guidelines: explicit assumptions, simple implementation, surgical edits, verifiable steps.
+- v1 只有 “Solar System Overview / 太阳系概述” 可点击。
+- 首页其他五个模块可见但禁用。
+- 行星、月球和太阳图像必须来自有记录的公开来源。
+- 网站必须通过 `?lang=zh` 和 `?lang=en` 支持中文和英文。
+- 后续扩展前，已有行为必须有测试保护。
+- 遵循 Karpathy Guidelines：明确假设、简单实现、克制修改、步骤可验证。
 
-## File Structure
+## 文件结构
 
-Create these files:
+创建这些文件：
 
-- `package.json` - scripts and dependencies.
-- `next.config.mjs` - Next.js configuration.
-- `tsconfig.json` - strict TypeScript config.
-- `tailwind.config.ts` - Tailwind content and tokens.
-- `postcss.config.mjs` - Tailwind PostCSS wiring.
-- `vitest.config.ts` - unit/component test config.
-- `playwright.config.ts` - browser screenshot and smoke config.
-- `README.md` - public project docs in Chinese with English support notes.
-- `docs/assets.md` - source records for all real visual assets.
-- `public/textures/README.md` - texture directory rules.
-- `src/app/layout.tsx` - root layout.
-- `src/app/page.tsx` - home route.
-- `src/app/overview/page.tsx` - overview route.
-- `src/app/globals.css` - global styles and Tailwind layers.
-- `src/types/domain.ts` - shared domain types.
-- `src/data/assets.ts` - asset metadata.
-- `src/data/bodies.ts` - celestial body and orbit data.
-- `src/data/modules.ts` - home module data.
-- `src/i18n/dictionaries.ts` - localized UI and content.
-- `src/lib/locale.ts` - language parsing and URL helpers.
-- `src/lib/orbits.ts` - pure orbital math.
-- `src/lib/url-state.ts` - query-state parsing and serialization.
-- `src/components/home/HomePage.tsx` - home composition.
-- `src/components/home/ModuleCard.tsx` - one module entry.
-- `src/components/layout/LanguageSwitch.tsx` - language switcher.
-- `src/components/overview/OverviewPage.tsx` - overview composition.
-- `src/components/overview/ControlBar.tsx` - time, speed, camera, layers.
-- `src/components/overview/BodyInfoPanel.tsx` - localized body encyclopedia.
-- `src/components/overview/WebGLFallback.tsx` - static fallback content.
-- `src/components/solar-system/SolarSystemCanvas.tsx` - 3D scene shell.
-- `src/components/solar-system/CelestialBodyMesh.tsx` - individual body mesh.
-- `src/components/solar-system/OrbitLine.tsx` - orbit path renderer.
-- `src/components/solar-system/Stars.tsx` - star background.
-- `src/test/setup.ts` - Vitest DOM setup.
-- `src/**/*.test.ts` and `src/**/*.test.tsx` - focused tests beside implementation.
-- `tests/e2e/app.spec.ts` - Playwright smoke checks.
+- `package.json` - 脚本和依赖。
+- `next.config.mjs` - Next.js 配置。
+- `tsconfig.json` - 严格 TypeScript 配置。
+- `tailwind.config.ts` - Tailwind 内容扫描和 token。
+- `postcss.config.mjs` - Tailwind PostCSS 接入。
+- `vitest.config.ts` - 单元/组件测试配置。
+- `playwright.config.ts` - 浏览器截图和冒烟测试配置。
+- `README.md` - 面向公开项目的中文说明，并说明英文支持。
+- `docs/assets.md` - 所有真实视觉素材的来源记录。
+- `public/textures/README.md` - 纹理目录规则。
+- `src/app/layout.tsx` - 根布局。
+- `src/app/page.tsx` - 首页路由。
+- `src/app/overview/page.tsx` - 概述页路由。
+- `src/app/globals.css` - 全局样式和 Tailwind 层。
+- `src/types/domain.ts` - 共享领域类型。
+- `src/data/assets.ts` - 素材元数据。
+- `src/data/bodies.ts` - 天体和轨道数据。
+- `src/data/modules.ts` - 首页模块数据。
+- `src/i18n/dictionaries.ts` - 本地化 UI 和内容。
+- `src/lib/locale.ts` - 语言解析和 URL 辅助函数。
+- `src/lib/orbits.ts` - 纯轨道计算。
+- `src/lib/url-state.ts` - 查询状态解析和序列化。
+- `src/components/home/HomePage.tsx` - 首页组合组件。
+- `src/components/home/ModuleCard.tsx` - 单个模块入口。
+- `src/components/layout/LanguageSwitch.tsx` - 语言切换器。
+- `src/components/overview/OverviewPage.tsx` - 概述页组合组件。
+- `src/components/overview/ControlBar.tsx` - 时间、速度、视角和图层控件。
+- `src/components/overview/BodyInfoPanel.tsx` - 本地化天体百科面板。
+- `src/components/overview/WebGLFallback.tsx` - 静态兜底内容。
+- `src/components/solar-system/SolarSystemCanvas.tsx` - 3D 场景外壳。
+- `src/components/solar-system/CelestialBodyMesh.tsx` - 单个天体网格。
+- `src/components/solar-system/OrbitLine.tsx` - 轨道路径渲染。
+- `src/components/solar-system/Stars.tsx` - 星空背景。
+- `src/test/setup.ts` - Vitest DOM 测试初始化。
+- `src/**/*.test.ts` 和 `src/**/*.test.tsx` - 与实现相邻的聚焦测试。
+- `tests/e2e/app.spec.ts` - Playwright 冒烟测试。
 
-Do not commit `.idea/`.
+不要提交 `.idea/`。
 
-## Task 1: Project Scaffold
+## 任务 1：项目脚手架
 
-**Files:**
-- Create: `package.json`
-- Create: `next.config.mjs`
-- Create: `tsconfig.json`
-- Create: `tailwind.config.ts`
-- Create: `postcss.config.mjs`
-- Create: `vitest.config.ts`
-- Create: `playwright.config.ts`
-- Create: `src/app/layout.tsx`
-- Create: `src/app/globals.css`
-- Create: `src/test/setup.ts`
-- Modify: `.gitignore`
+**文件：**
+- 创建：`package.json`
+- 创建：`next.config.mjs`
+- 创建：`tsconfig.json`
+- 创建：`tailwind.config.ts`
+- 创建：`postcss.config.mjs`
+- 创建：`vitest.config.ts`
+- 创建：`playwright.config.ts`
+- 创建：`src/app/layout.tsx`
+- 创建：`src/app/globals.css`
+- 创建：`src/test/setup.ts`
+- 修改：`.gitignore`
 
-- [ ] **Step 1: Create package metadata and scripts**
+- [ ] **步骤 1：创建 package 元数据和脚本**
 
-Write `package.json`:
+写入 `package.json`:
 
 ```json
 {
@@ -130,9 +130,9 @@ Write `package.json`:
 }
 ```
 
-- [ ] **Step 2: Create TypeScript and build configs**
+- [ ] **步骤 2：创建 TypeScript 和构建配置**
 
-Write `next.config.mjs`:
+写入 `next.config.mjs`:
 
 ```js
 /** @type {import('next').NextConfig} */
@@ -143,7 +143,7 @@ const nextConfig = {
 export default nextConfig;
 ```
 
-Write `tsconfig.json`:
+写入 `tsconfig.json`:
 
 ```json
 {
@@ -170,7 +170,7 @@ Write `tsconfig.json`:
 }
 ```
 
-Write `tailwind.config.ts`:
+写入 `tailwind.config.ts`:
 
 ```ts
 import type { Config } from "tailwindcss";
@@ -198,7 +198,7 @@ const config: Config = {
 export default config;
 ```
 
-Write `postcss.config.mjs`:
+写入 `postcss.config.mjs`:
 
 ```js
 const config = {
@@ -211,9 +211,9 @@ const config = {
 export default config;
 ```
 
-- [ ] **Step 3: Create test configs**
+- [ ] **步骤 3：创建测试配置**
 
-Write `vitest.config.ts`:
+写入 `vitest.config.ts`:
 
 ```ts
 import { defineConfig } from "vitest/config";
@@ -232,13 +232,13 @@ export default defineConfig({
 });
 ```
 
-Write `src/test/setup.ts`:
+写入 `src/test/setup.ts`:
 
 ```ts
 import "@testing-library/jest-dom/vitest";
 ```
 
-Write `playwright.config.ts`:
+写入 `playwright.config.ts`:
 
 ```ts
 import { defineConfig, devices } from "@playwright/test";
@@ -261,9 +261,9 @@ export default defineConfig({
 });
 ```
 
-- [ ] **Step 4: Create app shell**
+- [ ] **步骤 4：创建应用外壳**
 
-Write `src/app/layout.tsx`:
+写入 `src/app/layout.tsx`:
 
 ```tsx
 import type { Metadata } from "next";
@@ -283,7 +283,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 }
 ```
 
-Write `src/app/globals.css`:
+写入 `src/app/globals.css`:
 
 ```css
 @tailwind base;
@@ -321,7 +321,7 @@ select {
 }
 ```
 
-- [ ] **Step 5: Update git ignore**
+- [ ] **步骤 5：更新 git ignore**
 
 Ensure `.gitignore` contains:
 
@@ -338,40 +338,40 @@ playwright-report
 tsconfig.tsbuildinfo
 ```
 
-- [ ] **Step 6: Verify scaffold**
+- [ ] **步骤 6：验证脚手架**
 
-Run: `npm install`
+运行：`npm install`
 
-Expected: dependencies install and `package-lock.json` is created.
+预期：dependencies install and `package-lock.json` is created.
 
-Run: `npm run test`
+运行：`npm run test`
 
-Expected: Vitest exits successfully with no tests or a no-test notice. If Vitest exits non-zero due to no tests, add the first test in Task 2 before committing.
+预期：Vitest exits successfully with no tests or a no-test notice. If Vitest exits non-zero due to no tests, add the first test in Task 2 before committing.
 
-- [ ] **Step 7: Commit**
+- [ ] **步骤 7：提交**
 
 ```bash
 git add package.json package-lock.json next.config.mjs next-env.d.ts tsconfig.json tailwind.config.ts postcss.config.mjs vitest.config.ts playwright.config.ts src/app/layout.tsx src/app/globals.css src/test/setup.ts .gitignore
 git commit -m "chore: scaffold solar system explorer"
 ```
 
-## Task 2: Domain Types, Data, Assets, and i18n
+## 任务 2：领域类型、数据、素材和 i18n
 
-**Files:**
-- Create: `src/types/domain.ts`
-- Create: `src/data/assets.ts`
-- Create: `src/data/bodies.ts`
-- Create: `src/data/modules.ts`
-- Create: `src/i18n/dictionaries.ts`
-- Create: `src/lib/locale.ts`
-- Create: `src/lib/locale.test.ts`
-- Create: `src/data/data-integrity.test.ts`
-- Create: `docs/assets.md`
-- Create: `public/textures/README.md`
+**文件：**
+- 创建：`src/types/domain.ts`
+- 创建：`src/data/assets.ts`
+- 创建：`src/data/bodies.ts`
+- 创建：`src/data/modules.ts`
+- 创建：`src/i18n/dictionaries.ts`
+- 创建：`src/lib/locale.ts`
+- 创建：`src/lib/locale.test.ts`
+- 创建：`src/data/data-integrity.test.ts`
+- 创建：`docs/assets.md`
+- 创建：`public/textures/README.md`
 
-- [ ] **Step 1: Define domain types**
+- [ ] **步骤 1：定义领域类型**
 
-Write `src/types/domain.ts`:
+写入 `src/types/domain.ts`:
 
 ```ts
 export type Locale = "zh" | "en";
@@ -444,9 +444,9 @@ export interface CelestialBody {
 }
 ```
 
-- [ ] **Step 2: Add asset metadata**
+- [ ] **步骤 2：添加素材元数据**
 
-Write `src/data/assets.ts` with source records. Use local paths even before binary textures are added; later asset work must place files at these paths.
+写入 `src/data/assets.ts` with source records. Use local paths even before binary textures are added; later asset work must place files at these paths.
 
 ```ts
 import type { AssetSource } from "@/types/domain";
@@ -575,9 +575,9 @@ export const assetSources: AssetSource[] = [
 ];
 ```
 
-- [ ] **Step 3: Add body and module data**
+- [ ] **步骤 3：添加天体和模块数据**
 
-Write `src/data/bodies.ts` using the real bodies below. Keep copy short and accurate.
+写入 `src/data/bodies.ts` using the real bodies below. Keep copy short and accurate.
 
 ```ts
 import type { CelestialBody } from "@/types/domain";
@@ -733,7 +733,7 @@ export const bodies: CelestialBody[] = [
 ];
 ```
 
-Write `src/data/modules.ts`:
+写入 `src/data/modules.ts`:
 
 ```ts
 import type { LearningModule } from "@/types/domain";
@@ -785,9 +785,9 @@ export const learningModules: LearningModule[] = [
 ];
 ```
 
-- [ ] **Step 4: Add dictionaries and locale helpers**
+- [ ] **步骤 4：添加字典和语言辅助函数**
 
-Write `src/i18n/dictionaries.ts`:
+写入 `src/i18n/dictionaries.ts`:
 
 ```ts
 import type { Locale } from "@/types/domain";
@@ -854,7 +854,7 @@ export const dictionaries = {
 export type Dictionary = typeof dictionaries.zh;
 ```
 
-Write `src/lib/locale.ts`:
+写入 `src/lib/locale.ts`:
 
 ```ts
 import type { Locale } from "@/types/domain";
@@ -879,9 +879,9 @@ export function withLocaleSearchParams(searchParams: URLSearchParams, locale: Lo
 }
 ```
 
-- [ ] **Step 5: Write data integrity tests**
+- [ ] **步骤 5：编写数据完整性测试**
 
-Write `src/lib/locale.test.ts`:
+写入 `src/lib/locale.test.ts`:
 
 ```ts
 import { describe, expect, it } from "vitest";
@@ -910,7 +910,7 @@ describe("locale helpers", () => {
 });
 ```
 
-Write `src/data/data-integrity.test.ts`:
+写入 `src/data/data-integrity.test.ts`:
 
 ```ts
 import { describe, expect, it } from "vitest";
@@ -948,9 +948,9 @@ describe("data integrity", () => {
 });
 ```
 
-- [ ] **Step 6: Document assets**
+- [ ] **步骤 6：记录素材说明**
 
-Write `docs/assets.md`:
+写入 `docs/assets.md`:
 
 ```md
 # 素材来源
@@ -976,49 +976,49 @@ Write `docs/assets.md`:
 - NASA Visible Earth: https://visibleearth.nasa.gov/
 ```
 
-Write `public/textures/README.md`:
+写入 `public/textures/README.md`:
 
 ```md
-# Textures
+# 纹理素材
 
-Place web-optimized local texture files here.
+这里放置经过 Web 优化的本地纹理文件。
 
-Rules:
+规则：
 
-- Every texture must have a matching record in `src/data/assets.ts`.
-- Do not add unsourced images.
-- Prefer reasonably compressed JPG or WebP files.
-- Do not include NASA logos or mission badges as UI branding.
+- 每个纹理都必须在 `src/data/assets.ts` 中有对应来源记录。
+- 不添加无来源图片。
+- 优先使用合理压缩的 JPG 或 WebP 文件。
+- 不把 NASA 标识或任务徽章作为 UI 品牌元素。
 ```
 
-- [ ] **Step 7: Verify and commit**
+- [ ] **步骤 7：验证并提交**
 
-Run: `npm run test -- src/lib/locale.test.ts src/data/data-integrity.test.ts`
+运行：`npm run test -- src/lib/locale.test.ts src/data/data-integrity.test.ts`
 
-Expected: all tests pass.
+预期：所有测试通过。
 
-Run: `npm run build`
+运行：`npm run build`
 
-Expected: Next.js build completes once route files exist. If route files are not yet created, defer build to Task 4 and run TypeScript check with `npx tsc --noEmit`.
+预期：Next.js build completes once route files exist. If route files are not yet created, defer build to Task 4 and run TypeScript check with `npx tsc --noEmit`.
 
-Commit:
+提交：
 
 ```bash
 git add src/types/domain.ts src/data/assets.ts src/data/bodies.ts src/data/modules.ts src/i18n/dictionaries.ts src/lib/locale.ts src/lib/locale.test.ts src/data/data-integrity.test.ts docs/assets.md public/textures/README.md
 git commit -m "feat: add solar system data model"
 ```
 
-## Task 3: Orbital Math and URL State
+## 任务 3：轨道计算和 URL 状态
 
-**Files:**
-- Create: `src/lib/orbits.ts`
-- Create: `src/lib/orbits.test.ts`
-- Create: `src/lib/url-state.ts`
-- Create: `src/lib/url-state.test.ts`
+**文件：**
+- 创建：`src/lib/orbits.ts`
+- 创建：`src/lib/orbits.test.ts`
+- 创建：`src/lib/url-state.ts`
+- 创建：`src/lib/url-state.test.ts`
 
-- [ ] **Step 1: Write orbital math tests**
+- [ ] **步骤 1：编写轨道计算测试**
 
-Write `src/lib/orbits.test.ts`:
+写入 `src/lib/orbits.test.ts`:
 
 ```ts
 import { describe, expect, it } from "vitest";
@@ -1052,9 +1052,9 @@ describe("orbits", () => {
 });
 ```
 
-- [ ] **Step 2: Implement orbital math**
+- [ ] **步骤 2：实现轨道计算**
 
-Write `src/lib/orbits.ts`:
+写入 `src/lib/orbits.ts`:
 
 ```ts
 import type { OrbitData } from "@/types/domain";
@@ -1082,9 +1082,9 @@ export function getBodyPosition(orbit: OrbitData, elapsedDays: number): Vector3T
 }
 ```
 
-- [ ] **Step 3: Write URL state tests**
+- [ ] **步骤 3：编写 URL 状态测试**
 
-Write `src/lib/url-state.test.ts`:
+写入 `src/lib/url-state.test.ts`:
 
 ```ts
 import { describe, expect, it } from "vitest";
@@ -1121,9 +1121,9 @@ describe("url state", () => {
 });
 ```
 
-- [ ] **Step 4: Implement URL state**
+- [ ] **步骤 4：实现 URL 状态**
 
-Write `src/lib/url-state.ts`:
+写入 `src/lib/url-state.ts`:
 
 ```ts
 import type { CameraPreset, LayerKey, Locale } from "@/types/domain";
@@ -1173,31 +1173,31 @@ export function serializeUrlState(state: UrlState): string {
 }
 ```
 
-- [ ] **Step 5: Verify and commit**
+- [ ] **步骤 5：验证并提交**
 
-Run: `npm run test -- src/lib/orbits.test.ts src/lib/url-state.test.ts`
+运行：`npm run test -- src/lib/orbits.test.ts src/lib/url-state.test.ts`
 
-Expected: all tests pass.
+预期：所有测试通过。
 
-Commit:
+提交：
 
 ```bash
 git add src/lib/orbits.ts src/lib/orbits.test.ts src/lib/url-state.ts src/lib/url-state.test.ts
 git commit -m "feat: add orbit and url state helpers"
 ```
 
-## Task 4: Home Page and Language Switching
+## 任务 4：首页和语言切换
 
-**Files:**
-- Create: `src/components/layout/LanguageSwitch.tsx`
-- Create: `src/components/home/ModuleCard.tsx`
-- Create: `src/components/home/HomePage.tsx`
-- Create: `src/components/home/HomePage.test.tsx`
-- Create: `src/app/page.tsx`
+**文件：**
+- 创建：`src/components/layout/LanguageSwitch.tsx`
+- 创建：`src/components/home/ModuleCard.tsx`
+- 创建：`src/components/home/HomePage.tsx`
+- 创建：`src/components/home/HomePage.test.tsx`
+- 创建：`src/app/page.tsx`
 
-- [ ] **Step 1: Write home page tests**
+- [ ] **步骤 1：编写首页测试**
 
-Write `src/components/home/HomePage.test.tsx`:
+写入 `src/components/home/HomePage.test.tsx`:
 
 ```tsx
 import { render, screen } from "@testing-library/react";
@@ -1227,9 +1227,9 @@ Install `@testing-library/user-event` if this test imports it:
 npm install --save-dev @testing-library/user-event
 ```
 
-- [ ] **Step 2: Implement language switcher**
+- [ ] **步骤 2：实现语言切换器**
 
-Write `src/components/layout/LanguageSwitch.tsx`:
+写入 `src/components/layout/LanguageSwitch.tsx`:
 
 ```tsx
 "use client";
@@ -1264,9 +1264,9 @@ export function LanguageSwitch({ locale }: LanguageSwitchProps) {
 }
 ```
 
-- [ ] **Step 3: Implement module card**
+- [ ] **步骤 3：实现模块卡片**
 
-Write `src/components/home/ModuleCard.tsx`:
+写入 `src/components/home/ModuleCard.tsx`:
 
 ```tsx
 import Link from "next/link";
@@ -1309,9 +1309,9 @@ export function ModuleCard({ module, locale }: ModuleCardProps) {
 }
 ```
 
-- [ ] **Step 4: Implement home page**
+- [ ] **步骤 4：实现首页**
 
-Write `src/components/home/HomePage.tsx`:
+写入 `src/components/home/HomePage.tsx`:
 
 ```tsx
 import type { Locale } from "@/types/domain";
@@ -1349,7 +1349,7 @@ export function HomePage({ locale }: { locale: Locale }) {
 }
 ```
 
-Write `src/app/page.tsx`:
+写入 `src/app/page.tsx`:
 
 ```tsx
 import { HomePage } from "@/components/home/HomePage";
@@ -1365,35 +1365,35 @@ export default async function Page({ searchParams }: PageProps) {
 }
 ```
 
-- [ ] **Step 5: Verify and commit**
+- [ ] **步骤 5：验证并提交**
 
-Run: `npm run test -- src/components/home/HomePage.test.tsx`
+运行：`npm run test -- src/components/home/HomePage.test.tsx`
 
-Expected: all tests pass.
+预期：所有测试通过。
 
-Run: `npm run build`
+运行：`npm run build`
 
-Expected: build passes.
+预期：构建通过。
 
-Commit:
+提交：
 
 ```bash
 git add src/components/layout/LanguageSwitch.tsx src/components/home/ModuleCard.tsx src/components/home/HomePage.tsx src/components/home/HomePage.test.tsx src/app/page.tsx package.json package-lock.json
 git commit -m "feat: build bilingual home entry"
 ```
 
-## Task 5: 3D Solar System Scene
+## 任务 5：3D 太阳系场景
 
-**Files:**
-- Create: `src/components/solar-system/SolarSystemCanvas.tsx`
-- Create: `src/components/solar-system/CelestialBodyMesh.tsx`
-- Create: `src/components/solar-system/OrbitLine.tsx`
-- Create: `src/components/solar-system/Stars.tsx`
-- Create: `src/components/solar-system/SolarSystemCanvas.test.tsx`
+**文件：**
+- 创建：`src/components/solar-system/SolarSystemCanvas.tsx`
+- 创建：`src/components/solar-system/CelestialBodyMesh.tsx`
+- 创建：`src/components/solar-system/OrbitLine.tsx`
+- 创建：`src/components/solar-system/Stars.tsx`
+- 创建：`src/components/solar-system/SolarSystemCanvas.test.tsx`
 
-- [ ] **Step 1: Write smoke test for 3D scene composition**
+- [ ] **步骤 1：编写 3D 场景组合冒烟测试**
 
-Write `src/components/solar-system/SolarSystemCanvas.test.tsx`:
+写入 `src/components/solar-system/SolarSystemCanvas.test.tsx`:
 
 ```tsx
 import { render, screen } from "@testing-library/react";
@@ -1428,9 +1428,9 @@ describe("SolarSystemCanvas", () => {
 });
 ```
 
-- [ ] **Step 2: Implement star background**
+- [ ] **步骤 2：实现星空背景**
 
-Write `src/components/solar-system/Stars.tsx`:
+写入 `src/components/solar-system/Stars.tsx`:
 
 ```tsx
 import { useMemo } from "react";
@@ -1455,9 +1455,9 @@ export function Stars() {
 }
 ```
 
-- [ ] **Step 3: Implement orbit line**
+- [ ] **步骤 3：实现轨道线**
 
-Write `src/components/solar-system/OrbitLine.tsx`:
+写入 `src/components/solar-system/OrbitLine.tsx`:
 
 ```tsx
 import { useMemo } from "react";
@@ -1487,9 +1487,9 @@ export function OrbitLine({ orbit }: { orbit: OrbitData }) {
 }
 ```
 
-- [ ] **Step 4: Implement body mesh**
+- [ ] **步骤 4：实现天体网格**
 
-Write `src/components/solar-system/CelestialBodyMesh.tsx`:
+写入 `src/components/solar-system/CelestialBodyMesh.tsx`:
 
 ```tsx
 import { Html, useTexture } from "@react-three/drei";
@@ -1538,9 +1538,9 @@ export function CelestialBodyMesh({ body, locale, elapsedDays, showLabel, onSele
 }
 ```
 
-- [ ] **Step 5: Implement scene canvas**
+- [ ] **步骤 5：实现场景 Canvas**
 
-Write `src/components/solar-system/SolarSystemCanvas.tsx`:
+写入 `src/components/solar-system/SolarSystemCanvas.tsx`:
 
 ```tsx
 "use client";
@@ -1594,32 +1594,32 @@ export function SolarSystemCanvas({ locale, elapsedDays, layers, onSelectBody }:
 }
 ```
 
-- [ ] **Step 6: Verify and commit**
+- [ ] **步骤 6：验证并提交**
 
-Run: `npm run test -- src/components/solar-system/SolarSystemCanvas.test.tsx`
+运行：`npm run test -- src/components/solar-system/SolarSystemCanvas.test.tsx`
 
-Expected: test passes.
+预期：test passes.
 
-Commit:
+提交：
 
 ```bash
 git add src/components/solar-system
 git commit -m "feat: add 3d solar system scene"
 ```
 
-## Task 6: Overview Page Controls and Encyclopedia
+## 任务 6：概述页控件和百科面板
 
-**Files:**
-- Create: `src/components/overview/ControlBar.tsx`
-- Create: `src/components/overview/BodyInfoPanel.tsx`
-- Create: `src/components/overview/WebGLFallback.tsx`
-- Create: `src/components/overview/OverviewPage.tsx`
-- Create: `src/components/overview/OverviewPage.test.tsx`
-- Create: `src/app/overview/page.tsx`
+**文件：**
+- 创建：`src/components/overview/ControlBar.tsx`
+- 创建：`src/components/overview/BodyInfoPanel.tsx`
+- 创建：`src/components/overview/WebGLFallback.tsx`
+- 创建：`src/components/overview/OverviewPage.tsx`
+- 创建：`src/components/overview/OverviewPage.test.tsx`
+- 创建：`src/app/overview/page.tsx`
 
-- [ ] **Step 1: Write overview tests**
+- [ ] **步骤 1：编写概述页测试**
 
-Write `src/components/overview/OverviewPage.test.tsx`:
+写入 `src/components/overview/OverviewPage.test.tsx`:
 
 ```tsx
 import { render, screen } from "@testing-library/react";
@@ -1652,9 +1652,9 @@ describe("OverviewPage", () => {
 });
 ```
 
-- [ ] **Step 2: Implement body info panel**
+- [ ] **步骤 2：实现天体信息面板**
 
-Write `src/components/overview/BodyInfoPanel.tsx`:
+写入 `src/components/overview/BodyInfoPanel.tsx`:
 
 ```tsx
 import type { CelestialBody, Locale } from "@/types/domain";
@@ -1691,9 +1691,9 @@ export function BodyInfoPanel({ body, locale }: { body: CelestialBody; locale: L
 }
 ```
 
-- [ ] **Step 3: Implement control bar**
+- [ ] **步骤 3：实现控制栏**
 
-Write `src/components/overview/ControlBar.tsx`:
+写入 `src/components/overview/ControlBar.tsx`:
 
 ```tsx
 import { Pause, Play } from "lucide-react";
@@ -1782,9 +1782,9 @@ export function ControlBar(props: ControlBarProps) {
 }
 ```
 
-- [ ] **Step 4: Implement fallback and overview page**
+- [ ] **步骤 4：实现兜底和概述页**
 
-Write `src/components/overview/WebGLFallback.tsx`:
+写入 `src/components/overview/WebGLFallback.tsx`:
 
 ```tsx
 import type { Locale } from "@/types/domain";
@@ -1800,7 +1800,7 @@ export function WebGLFallback({ locale }: { locale: Locale }) {
 }
 ```
 
-Write `src/components/overview/OverviewPage.tsx`:
+写入 `src/components/overview/OverviewPage.tsx`:
 
 ```tsx
 "use client";
@@ -1868,7 +1868,7 @@ export function OverviewPage({ locale }: { locale: Locale }) {
 }
 ```
 
-Write `src/app/overview/page.tsx`:
+写入 `src/app/overview/page.tsx`:
 
 ```tsx
 import { OverviewPage } from "@/components/overview/OverviewPage";
@@ -1884,33 +1884,33 @@ export default async function Page({ searchParams }: PageProps) {
 }
 ```
 
-- [ ] **Step 5: Verify and commit**
+- [ ] **步骤 5：验证并提交**
 
-Run: `npm run test -- src/components/overview/OverviewPage.test.tsx`
+运行：`npm run test -- src/components/overview/OverviewPage.test.tsx`
 
-Expected: all tests pass.
+预期：所有测试通过。
 
-Run: `npm run build`
+运行：`npm run build`
 
-Expected: build passes.
+预期：构建通过。
 
-Commit:
+提交：
 
 ```bash
 git add src/components/overview src/app/overview/page.tsx
 git commit -m "feat: build overview learning interface"
 ```
 
-## Task 7: Public Documentation and Asset Compliance
+## 任务 7：公开文档和素材合规
 
-**Files:**
-- Create: `README.md`
-- Modify: `docs/assets.md`
-- Modify: `src/data/assets.ts` if real texture files differ from initial records.
+**文件：**
+- 创建：`README.md`
+- 修改：`docs/assets.md`
+- 修改：`src/data/assets.ts` if real texture files differ from initial records.
 
-- [ ] **Step 1: Write README**
+- [ ] **步骤 1：编写 README**
 
-Write `README.md`:
+写入 `README.md`:
 
 ```md
 # 太阳系探索 Solar System Explorer
@@ -1960,7 +1960,7 @@ npm run e2e
 - 新增功能必须通过清晰接口接入，不破坏首页、概述模块、中英文切换和素材来源记录。
 ```
 
-- [ ] **Step 2: Replace placeholder asset records with actual downloaded sources**
+- [ ] **步骤 2：用实际下载来源替换占位素材记录**
 
 For each file in `public/textures/`, ensure a matching `src/data/assets.ts` record has the exact source URL and processing description. Do not add an image if its source cannot be documented.
 
@@ -1979,32 +1979,32 @@ public/textures/uranus.jpg
 public/textures/neptune.jpg
 ```
 
-- [ ] **Step 3: Verify documentation**
+- [ ] **步骤 3：验证文档**
 
-Run: `npm run test -- src/data/data-integrity.test.ts`
+运行：`npm run test -- src/data/data-integrity.test.ts`
 
-Expected: source metadata test passes.
+预期：source metadata test passes.
 
-Run: `npm run build`
+运行：`npm run build`
 
-Expected: build passes.
+预期：构建通过。
 
-Commit:
+提交：
 
 ```bash
 git add README.md docs/assets.md src/data/assets.ts public/textures
 git commit -m "docs: document project and visual assets"
 ```
 
-## Task 8: End-to-End Verification and Visual Smoke Checks
+## 任务 8：端到端验证和视觉冒烟检查
 
-**Files:**
-- Create: `tests/e2e/app.spec.ts`
-- Modify: affected files only for fixes found by tests.
+**文件：**
+- 创建：`tests/e2e/app.spec.ts`
+- 修改：affected files only for fixes found by tests.
 
-- [ ] **Step 1: Write Playwright smoke tests**
+- [ ] **步骤 1：编写 Playwright 冒烟测试**
 
-Write `tests/e2e/app.spec.ts`:
+写入 `tests/e2e/app.spec.ts`:
 
 ```ts
 import { expect, test } from "@playwright/test";
@@ -2032,7 +2032,7 @@ test("language switch keeps page usable", async ({ page }) => {
 });
 ```
 
-- [ ] **Step 2: Run full verification**
+- [ ] **步骤 2：运行完整验证**
 
 Run:
 
@@ -2042,13 +2042,13 @@ npm run build
 npm run e2e
 ```
 
-Expected:
+预期：
 
 - Unit and component tests pass.
-- Production build passes.
+- 生产构建通过。
 - Playwright desktop and mobile projects pass.
 
-- [ ] **Step 3: Manual browser screenshot review**
+- [ ] **步骤 3：人工浏览器截图检查**
 
 Start the app:
 
@@ -2072,7 +2072,7 @@ Verify:
 - Language switching preserves page usability.
 - Reduced motion settings do not make controls unusable.
 
-- [ ] **Step 4: Commit final verification**
+- [ ] **步骤 4：提交最终验证**
 
 If tests require fixes, commit them:
 
@@ -2088,9 +2088,9 @@ git add tests/e2e/app.spec.ts
 git commit -m "test: add end-to-end smoke coverage"
 ```
 
-## Self-Review
+## 自检
 
-Spec coverage:
+规格覆盖：
 
 - Product scope is covered by Tasks 4, 6, and 8.
 - High-quality 3D scene and real-source imagery are covered by Tasks 5 and 7.
@@ -2099,12 +2099,12 @@ Spec coverage:
 - Layering and extension safety are covered by the file structure, Tasks 2-6 boundaries, and regression tests in Task 8.
 - Karpathy/YAGNI constraints are reflected by task-by-task tests, focused files, and explicit non-goals.
 
-Placeholder scan:
+占位内容扫描：
 
 - No `TBD`, `TODO`, or “implement later” placeholders remain.
 - Asset source records start with public source URLs and must be replaced with exact source pages when binaries are added.
 
-Type consistency:
+类型一致性：
 
 - `Locale`, `CameraPreset`, `LayerKey`, `CelestialBody`, `LearningModule`, and `AssetSource` are defined once in `src/types/domain.ts`.
 - Later tasks consume those same names and property shapes.
