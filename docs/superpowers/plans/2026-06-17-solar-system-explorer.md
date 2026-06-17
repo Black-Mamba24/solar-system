@@ -28,7 +28,7 @@ Non-negotiable constraints:
 Create these files:
 
 - `package.json` - scripts and dependencies.
-- `next.config.ts` - Next.js configuration.
+- `next.config.mjs` - Next.js configuration.
 - `tsconfig.json` - strict TypeScript config.
 - `tailwind.config.ts` - Tailwind content and tokens.
 - `postcss.config.mjs` - Tailwind PostCSS wiring.
@@ -70,7 +70,7 @@ Do not commit `.idea/`.
 
 **Files:**
 - Create: `package.json`
-- Create: `next.config.ts`
+- Create: `next.config.mjs`
 - Create: `tsconfig.json`
 - Create: `tailwind.config.ts`
 - Create: `postcss.config.mjs`
@@ -105,9 +105,9 @@ Write `package.json`:
     "@react-three/fiber": "^8.17.10",
     "lucide-react": "^0.468.0",
     "motion": "^11.15.0",
-    "next": "^15.1.0",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
+    "next": "^14.2.23",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
     "three": "^0.171.0"
   },
   "devDependencies": {
@@ -115,12 +115,12 @@ Write `package.json`:
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.1.0",
     "@types/node": "^22.10.2",
-    "@types/react": "^19.0.2",
-    "@types/react-dom": "^19.0.2",
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
     "@types/three": "^0.171.0",
     "autoprefixer": "^10.4.20",
-    "eslint": "^9.17.0",
-    "eslint-config-next": "^15.1.0",
+    "eslint": "^8.57.1",
+    "eslint-config-next": "^14.2.23",
     "jsdom": "^25.0.1",
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.17",
@@ -132,12 +132,11 @@ Write `package.json`:
 
 - [ ] **Step 2: Create TypeScript and build configs**
 
-Write `next.config.ts`:
+Write `next.config.mjs`:
 
-```ts
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
+```js
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   reactStrictMode: true
 };
 
@@ -336,6 +335,7 @@ playwright-report
 .env*
 .DS_Store
 .idea/
+tsconfig.tsbuildinfo
 ```
 
 - [ ] **Step 6: Verify scaffold**
@@ -351,7 +351,7 @@ Expected: Vitest exits successfully with no tests or a no-test notice. If Vitest
 - [ ] **Step 7: Commit**
 
 ```bash
-git add package.json package-lock.json next.config.ts tsconfig.json tailwind.config.ts postcss.config.mjs vitest.config.ts playwright.config.ts src/app/layout.tsx src/app/globals.css src/test/setup.ts .gitignore
+git add package.json package-lock.json next.config.mjs next-env.d.ts tsconfig.json tailwind.config.ts postcss.config.mjs vitest.config.ts playwright.config.ts src/app/layout.tsx src/app/globals.css src/test/setup.ts .gitignore
 git commit -m "chore: scaffold solar system explorer"
 ```
 
