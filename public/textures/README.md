@@ -1,10 +1,10 @@
-# Textures
+# 贴图目录
 
-Place web-optimized local texture files here.
+这里放置经过 Web 优化的本地贴图文件。
 
-Rules:
+## 规则
 
-- Every texture must have a matching record in `src/data/assets.ts`.
-- Do not add unsourced images.
-- Prefer reasonably compressed JPG or WebP files.
-- Do not include NASA logos or mission badges as UI branding.
+- 每个贴图都必须在 `src/data/assets.ts` 中有对应来源记录。
+- 不要添加无法追溯来源的图片。
+- 优先使用合理压缩后的 JPG 或 WebP 文件。
+- 不要把 NASA 标志或任务徽章作为 UI 品牌元素使用。

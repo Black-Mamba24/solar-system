@@ -30,4 +30,22 @@ describe("data integrity", () => {
     const textured = bodies.filter((body) => body.textureAssetId);
     expect(textured.every((body) => assetIds.has(body.textureAssetId!))).toBe(true);
   });
+
+  it("includes basic physical metadata for all non-sun bodies", () => {
+    const missingMetadata = bodies
+      .filter((body) => body.id !== "sun")
+      .filter((body) => !body.massKg || body.axialTiltDeg === undefined)
+      .map((body) => body.id);
+
+    expect(missingMetadata).toEqual([]);
+  });
+
+  it("includes orbit data for every planet and moon", () => {
+    const missingOrbits = bodies
+      .filter((body) => body.type === "planet" || body.type === "moon")
+      .filter((body) => body.orbit === undefined)
+      .map((body) => body.id);
+
+    expect(missingOrbits).toEqual([]);
+  });
 });
