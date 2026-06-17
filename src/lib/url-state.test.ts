@@ -12,10 +12,20 @@ describe("url state", () => {
     });
   });
 
+  it("parses supported camera presets explicitly", () => {
+    expect(parseUrlState(new URLSearchParams("camera=earthMoon")).camera).toBe("earthMoon");
+    expect(parseUrlState(new URLSearchParams("camera=full")).camera).toBe("full");
+  });
+
   it("falls back for invalid values", () => {
     const state = parseUrlState(new URLSearchParams("lang=fr&camera=bad"));
     expect(state.locale).toBe("zh");
     expect(state.camera).toBe("full");
+    expect(state.layers).toEqual({ labels: true, orbits: true, moonOrbit: true });
+  });
+
+  it("falls back for invalid layer flags", () => {
+    const state = parseUrlState(new URLSearchParams("labels=false-ish&orbits=true&moonOrbit=no"));
     expect(state.layers).toEqual({ labels: true, orbits: true, moonOrbit: true });
   });
 
