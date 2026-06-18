@@ -1,13 +1,15 @@
 import React, { useMemo } from "react";
 import * as THREE from "three";
 import { degToRad } from "@/lib/orbits";
+import type { Vector3Tuple } from "@/lib/orbits";
 import type { OrbitData } from "@/types/domain";
 
 interface OrbitLineProps {
   orbit: OrbitData;
+  center?: Vector3Tuple;
 }
 
-export function OrbitLine({ orbit }: OrbitLineProps) {
+export function OrbitLine({ orbit, center = [0, 0, 0] }: OrbitLineProps) {
   const geometry = useMemo(() => {
     const points: THREE.Vector3[] = [];
     const inclination = degToRad(orbit.inclinationDeg);
@@ -16,11 +18,11 @@ export function OrbitLine({ orbit }: OrbitLineProps) {
       const angle = (step / 160) * Math.PI * 2;
       const x = Math.cos(angle) * orbit.displayDistance;
       const flatZ = Math.sin(angle) * orbit.displayDistance;
-      points.push(new THREE.Vector3(x, Math.sin(inclination) * flatZ, Math.cos(inclination) * flatZ));
+      points.push(new THREE.Vector3(center[0] + x, center[1] + Math.sin(inclination) * flatZ, center[2] + Math.cos(inclination) * flatZ));
     }
 
     return new THREE.BufferGeometry().setFromPoints(points);
-  }, [orbit]);
+  }, [center, orbit]);
 
   return (
     <line>

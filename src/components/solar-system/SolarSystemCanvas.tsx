@@ -8,6 +8,7 @@ import { dictionaries } from "@/i18n/dictionaries";
 import type { LayerKey, Locale } from "@/types/domain";
 import { CelestialBodyMesh } from "./CelestialBodyMesh";
 import { OrbitLine } from "./OrbitLine";
+import { getOrbitCenter } from "./scene-helpers";
 import { Stars } from "./Stars";
 
 interface SolarSystemCanvasProps {
@@ -27,13 +28,16 @@ export function SolarSystemCanvas({ locale, elapsedDays, selectedBodyId, layers,
         <pointLight position={[0, 0, 0]} intensity={800} color="#f8c45c" />
         <Stars />
         {layers.orbits
-          ? bodies.map((body) => (body.orbit && body.parentId !== "earth" ? <OrbitLine key={`${body.id}-orbit`} orbit={body.orbit} /> : null))
+          ? bodies.map((body) => (body.orbit && !body.parentId ? <OrbitLine key={`${body.id}-orbit`} orbit={body.orbit} center={getOrbitCenter(body, bodies, elapsedDays)} /> : null))
           : null}
-        {layers.moonOrbit ? bodies.map((body) => (body.id === "moon" && body.orbit ? <OrbitLine key="moon-orbit" orbit={body.orbit} /> : null)) : null}
+        {layers.moonOrbit
+          ? bodies.map((body) => (body.orbit && body.parentId ? <OrbitLine key={`${body.id}-orbit`} orbit={body.orbit} center={getOrbitCenter(body, bodies, elapsedDays)} /> : null))
+          : null}
         {bodies.map((body) => (
           <CelestialBodyMesh
             key={body.id}
             body={body}
+            bodies={bodies}
             locale={locale}
             elapsedDays={elapsedDays}
             selected={body.id === selectedBodyId}

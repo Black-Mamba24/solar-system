@@ -1,12 +1,13 @@
-import { Html, useTexture } from "@react-three/drei";
+import { Html } from "@react-three/drei";
 import React from "react";
 import * as THREE from "three";
 import { assetSources } from "@/data/assets";
-import { getBodyPosition } from "@/lib/orbits";
 import type { CelestialBody, Locale } from "@/types/domain";
+import { getBodyFallbackColor, getSceneBodyPosition } from "./scene-helpers";
 
 interface CelestialBodyMeshProps {
   body: CelestialBody;
+  bodies: CelestialBody[];
   locale: Locale;
   elapsedDays: number;
   showLabel: boolean;
@@ -14,26 +15,25 @@ interface CelestialBodyMeshProps {
   onSelectBody: (bodyId: string) => void;
 }
 
-export function CelestialBodyMesh({ body, locale, elapsedDays, showLabel, selected, onSelectBody }: CelestialBodyMeshProps) {
+export function CelestialBodyMesh({ body, bodies, locale, elapsedDays, showLabel, selected, onSelectBody }: CelestialBodyMeshProps) {
   const asset = assetSources.find((source) => source.id === body.textureAssetId);
-  const texture = useTexture(asset?.localPath ?? "/textures/missing.jpg") as THREE.Texture | null;
-  const position = body.orbit ? getBodyPosition(body.orbit, elapsedDays) : ([0, 0, 0] as [number, number, number]);
+  const position = getSceneBodyPosition(body, bodies, elapsedDays);
   const radius = body.orbit?.displayRadius ?? 2.2;
   const isSun = body.id === "sun";
+  const fallbackColor = getBodyFallbackColor(body);
 
   return (
     <group position={position}>
-      <mesh scale={selected ? 1.08 : 1} onClick={() => onSelectBody(body.id)}>
+      <mesh scale={selected ? 1.08 : 1} userData={{ textureSourceId: asset?.id, textureSourcePath: asset?.localPath }} onClick={() => onSelectBody(body.id)}>
         <sphereGeometry args={[radius, 64, 64]} />
         {isSun ? (
-          <meshBasicMaterial map={texture} color="#f8c45c" />
+          <meshBasicMaterial color={fallbackColor} />
         ) : (
           <meshStandardMaterial
-            map={texture}
-            color={texture ? "#ffffff" : body.orbit?.color ?? "#f8c45c"}
+            color={fallbackColor}
             roughness={0.72}
             metalness={0.02}
-            emissive={selected ? body.orbit?.color ?? "#f8c45c" : "#000000"}
+            emissive={selected ? fallbackColor : "#000000"}
             emissiveIntensity={selected ? 0.18 : 0}
           />
         )}
