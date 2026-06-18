@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { LanguageSwitch } from "@/components/layout/LanguageSwitch";
 import { SolarSystemCanvas } from "@/components/solar-system/SolarSystemCanvas";
@@ -31,20 +31,25 @@ export function isWebGLAvailable(): boolean {
 }
 
 export function OverviewPage({ locale }: { locale: Locale }) {
-  const dictionary = dictionaries[locale];
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const initialUrlState = useMemo(() => parseUrlState(new URLSearchParams(searchParams.toString())), [searchParams]);
+  const searchParamString = searchParams.toString();
+  const lastSyncedSearchParams = useRef(searchParamString);
+  const urlState = useMemo(() => parseUrlState(new URLSearchParams(searchParamString)), [searchParamString]);
+  const activeLocale = searchParams.has("lang") ? urlState.locale : locale;
+  const dictionary = dictionaries[activeLocale];
   const [webglSupported] = useState(isWebGLAvailable);
-  const [selectedBodyId, setSelectedBodyId] = useState(() => getValidBodyId(initialUrlState.selectedBodyId));
+  const [selectedBodyId, setSelectedBodyId] = useState(() => getValidBodyId(urlState.selectedBodyId));
   const [elapsedDays, setElapsedDays] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [speed, setSpeed] = useState(7);
-  const [camera, setCamera] = useState<CameraPreset>(initialUrlState.camera);
-  const [layers, setLayers] = useState<Record<LayerKey, boolean>>(initialUrlState.layers);
+  const [camera, setCamera] = useState<CameraPreset>(urlState.camera);
+  const [layers, setLayers] = useState<Record<LayerKey, boolean>>(urlState.layers);
 
   const selectedBody = useMemo(() => bodies.find((body) => body.id === selectedBodyId) ?? bodies.find((body) => body.id === "earth") ?? bodies[0], [selectedBodyId]);
+  const urlBodyId = getValidBodyId(urlState.selectedBodyId);
+  const searchParamsChanged = lastSyncedSearchParams.current !== searchParamString;
 
   useEffect(() => {
     if (!playing || speed <= 0) {
@@ -59,16 +64,34 @@ export function OverviewPage({ locale }: { locale: Locale }) {
   }, [playing, speed]);
 
   useEffect(() => {
-    router.replace(
-      `${pathname}${serializeUrlState({
-        locale,
-        selectedBodyId,
-        camera,
-        layers
-      })}`,
-      { scroll: false }
-    );
-  }, [camera, layers, locale, pathname, router, selectedBodyId]);
+    if (!searchParamsChanged) {
+      return;
+    }
+
+    lastSyncedSearchParams.current = searchParamString;
+    setSelectedBodyId(urlBodyId);
+    setCamera(urlState.camera);
+    setLayers(urlState.layers);
+  }, [searchParamString, searchParamsChanged, urlBodyId, urlState.camera, urlState.layers]);
+
+  useEffect(() => {
+    if (searchParamsChanged) {
+      return;
+    }
+
+    const serializedState = serializeUrlState({
+      locale: activeLocale,
+      selectedBodyId,
+      camera,
+      layers
+    });
+
+    if (`?${searchParamString}` === serializedState) {
+      return;
+    }
+
+    router.replace(`${pathname}${serializedState}`, { scroll: false });
+  }, [activeLocale, camera, layers, pathname, router, searchParamString, searchParamsChanged, selectedBodyId]);
 
   return (
     <main className="min-h-screen bg-space px-4 py-5 text-white md:px-6">
@@ -77,14 +100,14 @@ export function OverviewPage({ locale }: { locale: Locale }) {
           <p className="text-sm uppercase tracking-[0.22em] text-orbit">{dictionary.brandName}</p>
           <h1 className="mt-1 text-2xl font-semibold md:text-4xl">{dictionary.overviewTitle}</h1>
         </div>
-        <LanguageSwitch locale={locale} />
+        <LanguageSwitch locale={activeLocale} />
       </header>
 
       <div className="mx-auto mt-5 grid max-w-7xl gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
         <div className="space-y-4">
           {webglSupported ? (
             <SolarSystemCanvas
-              locale={locale}
+              locale={activeLocale}
               elapsedDays={elapsedDays}
               cameraPreset={camera}
               selectedBodyId={selectedBodyId}
@@ -92,10 +115,10 @@ export function OverviewPage({ locale }: { locale: Locale }) {
               onSelectBody={setSelectedBodyId}
             />
           ) : (
-            <WebGLFallback locale={locale} />
+            <WebGLFallback locale={activeLocale} />
           )}
           <ControlBar
-            locale={locale}
+            locale={activeLocale}
             playing={playing}
             elapsedDays={elapsedDays}
             speed={speed}
@@ -109,7 +132,7 @@ export function OverviewPage({ locale }: { locale: Locale }) {
           />
         </div>
 
-        <BodyInfoPanel body={selectedBody} locale={locale} />
+        <BodyInfoPanel body={selectedBody} locale={activeLocale} />
       </div>
     </main>
   );

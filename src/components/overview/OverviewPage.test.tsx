@@ -1,5 +1,5 @@
 import React from "react";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { isWebGLAvailable, OverviewPage } from "./OverviewPage";
 
@@ -101,6 +101,21 @@ describe("OverviewPage", () => {
     expect(navigationMocks.replace).toHaveBeenLastCalledWith("/overview?lang=en&body=earth&camera=full&labels=0&orbits=1&moonOrbit=1", {
       scroll: false
     });
+  });
+
+  it("resyncs local state when same-route URL search params change", async () => {
+    navigationMocks.searchParams = new URLSearchParams("lang=en&body=earth&camera=full&labels=1&orbits=1&moonOrbit=1");
+
+    const { rerender } = render(<OverviewPage locale="en" />);
+    expect(screen.getByRole("heading", { name: "Earth" })).toBeInTheDocument();
+
+    navigationMocks.searchParams = new URLSearchParams("lang=en&body=mars&camera=outer&labels=0&orbits=1&moonOrbit=0");
+    rerender(<OverviewPage locale="en" />);
+
+    await waitFor(() => expect(screen.getByRole("heading", { name: "Mars" })).toBeInTheDocument());
+    expect(screen.getByText("mock camera outer")).toBeInTheDocument();
+    expect(screen.getByLabelText("Labels")).not.toBeChecked();
+    expect(screen.getByLabelText("Moon orbit")).not.toBeChecked();
   });
 
   it("renders the fallback when WebGL is unavailable", () => {
