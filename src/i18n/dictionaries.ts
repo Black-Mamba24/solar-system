@@ -13,12 +13,24 @@ export interface AppDictionary {
   controls: {
     play: string;
     pause: string;
+    elapsedDays: string;
     speed: string;
     camera: string;
     layers: string;
     labels: string;
     orbits: string;
     moonOrbit: string;
+  };
+  bodyInfo: {
+    radius: string;
+    averageDistanceFromSun: string;
+    whyItMatters: string;
+    facts: string;
+  };
+  bodyTypes: {
+    star: string;
+    planet: string;
+    moon: string;
   };
   cameraPresets: {
     full: string;
@@ -46,12 +58,24 @@ export const dictionaries = {
     controls: {
       play: "播放",
       pause: "暂停",
+      elapsedDays: "经过天数",
       speed: "速度",
       camera: "视角",
       layers: "图层",
       labels: "标签",
       orbits: "轨道线",
       moonOrbit: "月球轨道"
+    },
+    bodyInfo: {
+      radius: "半径",
+      averageDistanceFromSun: "平均日距",
+      whyItMatters: "为什么重要",
+      facts: "要点"
+    },
+    bodyTypes: {
+      star: "恒星",
+      planet: "行星",
+      moon: "卫星"
     },
     cameraPresets: {
       full: "全景",
@@ -77,12 +101,24 @@ export const dictionaries = {
     controls: {
       play: "Play",
       pause: "Pause",
+      elapsedDays: "Elapsed days",
       speed: "Speed",
       camera: "Camera",
       layers: "Layers",
       labels: "Labels",
       orbits: "Orbits",
       moonOrbit: "Moon orbit"
+    },
+    bodyInfo: {
+      radius: "Radius",
+      averageDistanceFromSun: "Avg. solar distance",
+      whyItMatters: "Why it matters",
+      facts: "Facts"
+    },
+    bodyTypes: {
+      star: "Star",
+      planet: "Planet",
+      moon: "Moon"
     },
     cameraPresets: {
       full: "Full",
