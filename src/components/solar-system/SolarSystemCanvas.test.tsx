@@ -3,7 +3,7 @@ import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { bodies } from "@/data/bodies";
 import { CelestialBodyMesh } from "./CelestialBodyMesh";
-import { SolarSystemCanvas } from "./SolarSystemCanvas";
+import { getCameraPresetView, SolarSystemCanvas } from "./SolarSystemCanvas";
 import { getOrbitCenter, getSceneBodyPosition } from "./scene-helpers";
 
 const dreiMocks = vi.hoisted(() => ({
@@ -27,6 +27,7 @@ describe("SolarSystemCanvas", () => {
       <SolarSystemCanvas
         locale="zh"
         elapsedDays={0}
+        cameraPreset="full"
         selectedBodyId="earth"
         layers={{ labels: true, orbits: true, moonOrbit: true }}
         onSelectBody={() => undefined}
@@ -76,5 +77,12 @@ describe("SolarSystemCanvas", () => {
     });
 
     expect(dreiMocks.useTexture).not.toHaveBeenCalled();
+  });
+
+  it("provides camera views for each overview preset", () => {
+    expect(getCameraPresetView("full")).toEqual({ position: [0, 38, 68], target: [0, 0, 0] });
+    expect(getCameraPresetView("inner")).toEqual({ position: [0, 20, 32], target: [0, 0, 0] });
+    expect(getCameraPresetView("earthMoon")).toEqual({ position: [10, 9, 18], target: [-14, 0, 4] });
+    expect(getCameraPresetView("outer")).toEqual({ position: [0, 58, 96], target: [0, 0, 0] });
   });
 });

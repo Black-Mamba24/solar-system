@@ -1,28 +1,73 @@
 "use client";
 
 import { OrbitControls } from "@react-three/drei";
-import { Canvas } from "@react-three/fiber";
-import React from "react";
+import { Canvas, useThree } from "@react-three/fiber";
+import React, { useEffect, useRef } from "react";
+import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import { bodies } from "@/data/bodies";
 import { dictionaries } from "@/i18n/dictionaries";
-import type { LayerKey, Locale } from "@/types/domain";
+import type { Vector3Tuple } from "@/lib/orbits";
+import type { CameraPreset, LayerKey, Locale } from "@/types/domain";
 import { CelestialBodyMesh } from "./CelestialBodyMesh";
 import { OrbitLine } from "./OrbitLine";
 import { getOrbitCenter } from "./scene-helpers";
 import { Stars } from "./Stars";
 
+interface CameraPresetView {
+  position: Vector3Tuple;
+  target: Vector3Tuple;
+}
+
 interface SolarSystemCanvasProps {
   locale: Locale;
   elapsedDays: number;
+  cameraPreset: CameraPreset;
   selectedBodyId?: string;
   layers: Record<LayerKey, boolean>;
   onSelectBody: (bodyId: string) => void;
 }
 
-export function SolarSystemCanvas({ locale, elapsedDays, selectedBodyId, layers, onSelectBody }: SolarSystemCanvasProps) {
+const cameraPresetViews: Record<CameraPreset, CameraPresetView> = {
+  full: { position: [0, 38, 68], target: [0, 0, 0] },
+  inner: { position: [0, 20, 32], target: [0, 0, 0] },
+  earthMoon: { position: [10, 9, 18], target: [-14, 0, 4] },
+  outer: { position: [0, 58, 96], target: [0, 0, 0] }
+};
+
+export function getCameraPresetView(cameraPreset: CameraPreset): CameraPresetView {
+  return cameraPresetViews[cameraPreset];
+}
+
+function CameraPresetController({
+  cameraPreset,
+  controlsRef
+}: {
+  cameraPreset: CameraPreset;
+  controlsRef: React.MutableRefObject<OrbitControlsImpl | null>;
+}) {
+  const { camera } = useThree();
+
+  useEffect(() => {
+    const view = getCameraPresetView(cameraPreset);
+    camera.position.set(...view.position);
+    camera.lookAt(...view.target);
+
+    if (controlsRef.current) {
+      controlsRef.current.target.set(...view.target);
+      controlsRef.current.update();
+    }
+  }, [camera, cameraPreset, controlsRef]);
+
+  return null;
+}
+
+export function SolarSystemCanvas({ locale, elapsedDays, cameraPreset, selectedBodyId, layers, onSelectBody }: SolarSystemCanvasProps) {
+  const controlsRef = useRef<OrbitControlsImpl | null>(null);
+  const initialCameraView = getCameraPresetView(cameraPreset);
+
   return (
     <section className="relative min-h-[520px] overflow-hidden rounded-ui border border-white/10 bg-black">
-      <Canvas camera={{ position: [0, 38, 68], fov: 48 }} dpr={[1, 1.7]}>
+      <Canvas camera={{ position: initialCameraView.position, fov: 48 }} dpr={[1, 1.7]}>
         <color attach="background" args={["#03050b"]} />
         <ambientLight intensity={0.24} />
         <pointLight position={[0, 0, 0]} intensity={800} color="#f8c45c" />
@@ -45,7 +90,8 @@ export function SolarSystemCanvas({ locale, elapsedDays, selectedBodyId, layers,
             onSelectBody={onSelectBody}
           />
         ))}
-        <OrbitControls enableDamping dampingFactor={0.08} minDistance={8} maxDistance={120} />
+        <CameraPresetController cameraPreset={cameraPreset} controlsRef={controlsRef} />
+        <OrbitControls ref={controlsRef} enableDamping dampingFactor={0.08} minDistance={8} maxDistance={120} target={initialCameraView.target} />
       </Canvas>
       <p className="absolute bottom-3 left-3 rounded-ui bg-black/60 px-3 py-2 text-xs text-slate-200">
         {dictionaries[locale].compressedScale}

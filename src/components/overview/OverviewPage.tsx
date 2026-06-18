@@ -2,30 +2,49 @@
 
 import React from "react";
 import { useEffect, useMemo, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { LanguageSwitch } from "@/components/layout/LanguageSwitch";
 import { SolarSystemCanvas } from "@/components/solar-system/SolarSystemCanvas";
 import { bodies } from "@/data/bodies";
 import { dictionaries } from "@/i18n/dictionaries";
+import { parseUrlState, serializeUrlState } from "@/lib/url-state";
 import type { CameraPreset, LayerKey, Locale } from "@/types/domain";
 import { BodyInfoPanel } from "./BodyInfoPanel";
 import { ControlBar } from "./ControlBar";
+import { WebGLFallback } from "./WebGLFallback";
 
-const defaultLayers: Record<LayerKey, boolean> = {
-  labels: true,
-  orbits: true,
-  moonOrbit: true
-};
+function getValidBodyId(bodyId: string | undefined): string {
+  return bodies.some((body) => body.id === bodyId) ? bodyId! : "earth";
+}
+
+export function isWebGLAvailable(): boolean {
+  if (typeof document === "undefined") {
+    return true;
+  }
+
+  try {
+    const canvas = document.createElement("canvas");
+    return Boolean(canvas.getContext("webgl") || canvas.getContext("webgl2"));
+  } catch {
+    return false;
+  }
+}
 
 export function OverviewPage({ locale }: { locale: Locale }) {
   const dictionary = dictionaries[locale];
-  const [selectedBodyId, setSelectedBodyId] = useState("earth");
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const initialUrlState = useMemo(() => parseUrlState(new URLSearchParams(searchParams.toString())), [searchParams]);
+  const [webglSupported] = useState(isWebGLAvailable);
+  const [selectedBodyId, setSelectedBodyId] = useState(() => getValidBodyId(initialUrlState.selectedBodyId));
   const [elapsedDays, setElapsedDays] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [speed, setSpeed] = useState(7);
-  const [camera, setCamera] = useState<CameraPreset>("full");
-  const [layers, setLayers] = useState<Record<LayerKey, boolean>>(defaultLayers);
+  const [camera, setCamera] = useState<CameraPreset>(initialUrlState.camera);
+  const [layers, setLayers] = useState<Record<LayerKey, boolean>>(initialUrlState.layers);
 
-  const selectedBody = useMemo(() => bodies.find((body) => body.id === selectedBodyId) ?? bodies[0], [selectedBodyId]);
+  const selectedBody = useMemo(() => bodies.find((body) => body.id === selectedBodyId) ?? bodies.find((body) => body.id === "earth") ?? bodies[0], [selectedBodyId]);
 
   useEffect(() => {
     if (!playing || speed <= 0) {
@@ -39,6 +58,18 @@ export function OverviewPage({ locale }: { locale: Locale }) {
     return () => window.clearInterval(intervalId);
   }, [playing, speed]);
 
+  useEffect(() => {
+    router.replace(
+      `${pathname}${serializeUrlState({
+        locale,
+        selectedBodyId,
+        camera,
+        layers
+      })}`,
+      { scroll: false }
+    );
+  }, [camera, layers, locale, pathname, router, selectedBodyId]);
+
   return (
     <main className="min-h-screen bg-space px-4 py-5 text-white md:px-6">
       <header className="mx-auto flex max-w-7xl items-start justify-between gap-4">
@@ -51,13 +82,18 @@ export function OverviewPage({ locale }: { locale: Locale }) {
 
       <div className="mx-auto mt-5 grid max-w-7xl gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
         <div className="space-y-4">
-          <SolarSystemCanvas
-            locale={locale}
-            elapsedDays={elapsedDays}
-            selectedBodyId={selectedBodyId}
-            layers={layers}
-            onSelectBody={setSelectedBodyId}
-          />
+          {webglSupported ? (
+            <SolarSystemCanvas
+              locale={locale}
+              elapsedDays={elapsedDays}
+              cameraPreset={camera}
+              selectedBodyId={selectedBodyId}
+              layers={layers}
+              onSelectBody={setSelectedBodyId}
+            />
+          ) : (
+            <WebGLFallback locale={locale} />
+          )}
           <ControlBar
             locale={locale}
             playing={playing}
