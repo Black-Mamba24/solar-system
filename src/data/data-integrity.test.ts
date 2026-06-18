@@ -1,3 +1,5 @@
+import { existsSync, statSync } from "node:fs";
+import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { assetSources } from "./assets";
 import { bodies } from "./bodies";
@@ -65,6 +67,39 @@ describe("data integrity", () => {
       .map((asset) => asset.id);
 
     expect(invalidAssets).toEqual([]);
+  });
+
+  it("keeps asset source metadata complete and explicit about non-endorsement", () => {
+    const incompleteAssets = assetSources
+      .filter(
+        (asset) =>
+          !asset.title.trim() ||
+          !asset.url.trim() ||
+          !asset.agency.trim() ||
+          !asset.usage.trim() ||
+          !asset.processing.trim() ||
+          !asset.downloadedAt.trim()
+      )
+      .map((asset) => asset.id);
+    const missingEndorsementCaveat = assetSources
+      .filter((asset) => !/endorsement|背书/i.test(asset.usage))
+      .map((asset) => asset.id);
+
+    expect(incompleteAssets).toEqual([]);
+    expect(missingEndorsementCaveat).toEqual([]);
+  });
+
+  it("backs every asset local path with a non-empty file under public", () => {
+    const missingOrEmptyFiles = assetSources
+      .filter((asset) => {
+        const relativePublicPath = asset.localPath.replace(/^\/+/, "");
+        const filePath = path.join(process.cwd(), "public", relativePublicPath);
+
+        return !existsSync(filePath) || statSync(filePath).size === 0;
+      })
+      .map((asset) => asset.localPath);
+
+    expect(missingOrEmptyFiles).toEqual([]);
   });
 
   it("includes basic physical metadata for all non-sun bodies", () => {
