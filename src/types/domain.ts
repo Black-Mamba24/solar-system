@@ -57,7 +57,10 @@ export interface TemperatureRange {
 
 export interface MoonSet {
   count: number;
-  names: LocalizedText[];
+  names: Array<{
+    name: LocalizedText;
+    description: LocalizedText;
+  }>;
   note?: LocalizedText;
 }
 

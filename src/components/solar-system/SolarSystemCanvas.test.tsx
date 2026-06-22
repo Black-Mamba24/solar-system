@@ -7,6 +7,7 @@ import { getCameraPresetView, SolarSystemCanvas } from "./SolarSystemCanvas";
 import { getOrbitCenter, getSceneBodyPosition } from "./scene-helpers";
 
 const dreiMocks = vi.hoisted(() => ({
+  orbitControlsProps: [] as Array<Record<string, unknown>>,
   useTexture: vi.fn()
 }));
 
@@ -22,7 +23,10 @@ vi.mock("@react-three/fiber", () => ({
 }));
 
 vi.mock("@react-three/drei", () => ({
-  OrbitControls: () => <div data-testid="orbit-controls" />,
+  OrbitControls: (props: Record<string, unknown>) => {
+    dreiMocks.orbitControlsProps.push(props);
+    return <div data-testid="orbit-controls" />;
+  },
   Html: ({ children, position }: { children: React.ReactNode; position?: [number, number, number] }) => (
     <div data-html-position={position?.join(",")}>{children}</div>
   ),
@@ -35,6 +39,7 @@ describe("SolarSystemCanvas", () => {
   });
 
   afterEach(() => {
+    dreiMocks.orbitControlsProps = [];
     vi.restoreAllMocks();
   });
 
@@ -130,5 +135,20 @@ describe("SolarSystemCanvas", () => {
 
   it("provides a single full overview camera", () => {
     expect(getCameraPresetView("full")).toEqual({ position: [0, 74, 92], target: [0, 0, 0] });
+  });
+
+  it("zooms toward the pointer instead of the fixed solar center", () => {
+    render(
+      <SolarSystemCanvas
+        locale="en"
+        elapsedDays={0}
+        cameraPreset="full"
+        selectedBodyId="earth"
+        layers={{ labels: true, orbits: true, moonOrbit: true }}
+        onSelectBody={() => undefined}
+      />
+    );
+
+    expect(dreiMocks.orbitControlsProps.at(-1)).toMatchObject({ zoomToCursor: true });
   });
 });

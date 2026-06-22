@@ -30,7 +30,7 @@ describe("HomePage", () => {
 
     expect(screen.getByText("Solar System Overview")).toBeInTheDocument();
     expect(screen.getByText(dictionaries.en.homeTitle)).toBeInTheDocument();
-    expect(screen.getByText(dictionaries.en.homeEntryNote)).toBeInTheDocument();
+    expect(screen.queryByText(dictionaries.en.homeEntryNote)).not.toBeInTheDocument();
     expect(screen.getAllByText("Coming soon")).toHaveLength(5);
   });
 });

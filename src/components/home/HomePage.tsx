@@ -27,7 +27,6 @@ export function HomePage({ locale }: { locale: Locale }) {
             <div className="absolute left-[-2rem] top-1/2 h-[22rem] w-[22rem] -translate-y-1/2 rounded-full border border-white/10 md:h-[34rem] md:w-[34rem]" />
             <div className="absolute left-[-6rem] top-1/2 h-[32rem] w-[32rem] -translate-y-1/2 rounded-full border border-orbit/25 md:h-[48rem] md:w-[48rem]" />
             <div className="absolute left-[-11rem] top-1/2 h-[42rem] w-[42rem] -translate-y-1/2 rounded-full border border-white/10 md:h-[62rem] md:w-[62rem]" />
-            <div className="absolute bottom-5 right-5 max-w-64 text-right text-sm leading-6 text-slate-300">{dictionary.homeEntryNote}</div>
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">

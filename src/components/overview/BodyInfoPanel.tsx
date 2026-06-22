@@ -1,4 +1,6 @@
+import Image from "next/image";
 import React from "react";
+import { assetSources } from "@/data/assets";
 import { dictionaries } from "@/i18n/dictionaries";
 import type { CelestialBody, Locale } from "@/types/domain";
 
@@ -9,7 +11,7 @@ interface BodyInfoPanelProps {
 
 interface MetricCard {
   label: string;
-  value: string;
+  value: React.ReactNode;
 }
 
 const earthRadiusKm = 6371;
@@ -63,7 +65,8 @@ export function BodyInfoPanel({ body, locale }: BodyInfoPanelProps) {
   const content = body.content[locale];
   const dictionary = dictionaries[locale];
   const numberLocale = locale === "zh" ? "zh-CN" : "en-US";
-  const moonNames = body.moons?.names.map((moon) => moon[locale]).join(locale === "zh" ? "、" : ", ");
+  const asset = assetSources.find((source) => source.id === body.textureAssetId);
+  const comparePeriodsToEarth = body.type !== "moon";
 
   const metricCardCandidates: Array<MetricCard | undefined> = [
     {
@@ -97,13 +100,13 @@ export function BodyInfoPanel({ body, locale }: BodyInfoPanelProps) {
     body.rotationPeriodHours !== undefined
       ? {
           label: dictionary.bodyInfo.rotationPeriod,
-          value: formatComparedValue(formatDurationFromHours(body.rotationPeriodHours, locale), Math.abs(body.rotationPeriodHours) / earthRotationHours, locale)
+          value: formatComparedValue(formatDurationFromHours(body.rotationPeriodHours, locale), comparePeriodsToEarth ? Math.abs(body.rotationPeriodHours) / earthRotationHours : undefined, locale)
         }
       : undefined,
     body.orbit
       ? {
           label: dictionary.bodyInfo.orbitalPeriod,
-          value: formatComparedValue(formatDurationFromDays(body.orbit.orbitalPeriodDays, locale), body.orbit.orbitalPeriodDays / earthOrbitalDays, locale)
+          value: formatComparedValue(formatDurationFromDays(body.orbit.orbitalPeriodDays, locale), comparePeriodsToEarth ? body.orbit.orbitalPeriodDays / earthOrbitalDays : undefined, locale)
         }
       : undefined,
     body.moons
@@ -112,7 +115,22 @@ export function BodyInfoPanel({ body, locale }: BodyInfoPanelProps) {
           value:
             body.moons.count === 0
               ? dictionary.bodyInfo.noMoons
-              : `${body.moons.count.toLocaleString(numberLocale)} · ${moonNames}${body.moons.note ? ` · ${body.moons.note[locale]}` : ""}`
+              : body.moons.names.length > 1
+                ? (
+                    <div className="space-y-2">
+                      <p>{body.moons.count.toLocaleString(numberLocale)}</p>
+                      {body.moons.note ? <p className="text-slate-300">{body.moons.note[locale]}</p> : null}
+                      <ol className="list-decimal space-y-2 pl-5">
+                        {body.moons.names.map((moon) => (
+                          <li key={moon.name.en}>
+                            <span className="font-medium">{moon.name[locale]}</span>
+                            <span className="text-slate-300">：{moon.description[locale]}</span>
+                          </li>
+                        ))}
+                      </ol>
+                    </div>
+                  )
+                : `${body.moons.count.toLocaleString(numberLocale)} · ${body.moons.names[0]?.name[locale] ?? ""}`
         }
       : undefined
   ];
@@ -122,6 +140,9 @@ export function BodyInfoPanel({ body, locale }: BodyInfoPanelProps) {
     <aside className="rounded-ui border border-white/10 bg-panel p-5 text-white xl:max-h-[calc(100vh-7rem)] xl:overflow-y-auto">
       <p className="text-sm uppercase tracking-[0.18em] text-orbit">{dictionary.bodyTypes[body.type]}</p>
       <h2 className="mt-2 text-2xl font-semibold">{body.name[locale]}</h2>
+      {asset ? (
+        <Image src={asset.localPath} alt={body.name[locale]} width={960} height={540} className="mt-4 aspect-[16/9] w-full rounded-ui border border-white/10 object-cover" />
+      ) : null}
       <p className="mt-3 whitespace-pre-line text-sm leading-6 text-slate-200">{content.summary}</p>
 
       <dl className="mt-5 grid grid-cols-1 gap-3 text-sm sm:grid-cols-2 xl:grid-cols-1">

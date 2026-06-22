@@ -90,7 +90,15 @@ export function SolarSystemCanvas({ locale, elapsedDays, cameraPreset, selectedB
           />
         ))}
         <CameraPresetController cameraPreset={cameraPreset} controlsRef={controlsRef} />
-        <OrbitControls ref={controlsRef} enableDamping dampingFactor={0.08} minDistance={8} maxDistance={120} target={initialCameraView.target} />
+        <OrbitControls
+          ref={controlsRef}
+          enableDamping
+          dampingFactor={0.08}
+          minDistance={8}
+          maxDistance={120}
+          target={initialCameraView.target}
+          zoomToCursor
+        />
       </Canvas>
       <p className="absolute bottom-3 left-3 rounded-ui bg-black/60 px-3 py-2 text-xs text-slate-200">
         {dictionaries[locale].compressedScale}

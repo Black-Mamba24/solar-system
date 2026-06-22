@@ -1,6 +1,9 @@
 import type { CelestialBody, LocalizedText, MoonSet } from "@/types/domain";
 
-const namedMoon = (zh: string, en: string): LocalizedText => ({ zh, en });
+const namedMoon = (zh: string, en: string, descriptionZh = "", descriptionEn = "") => ({
+  name: { zh, en },
+  description: { zh: descriptionZh, en: descriptionEn }
+});
 
 const noMoons: MoonSet = { count: 0, names: [] };
 
@@ -87,7 +90,7 @@ export const bodies: CelestialBody[] = [
     rotationPeriodHours: 23.93,
     surfaceGravityMs2: 9.81,
     temperatureRangeC: { minC: -89, maxC: 58 },
-    moons: { count: 1, names: [namedMoon("月球", "Moon")] },
+    moons: { count: 1, names: [namedMoon("月球", "Moon", "地球唯一的天然卫星，影响潮汐并稳定地球自转轴。", "Earth's only natural satellite; it drives tides and helps stabilize Earth's axis.")] },
     axialTiltDeg: 23.44,
     orbit: { semiMajorAxisAu: 1, displayDistance: 15, displayRadius: 0.75, orbitalPeriodDays: 365.25, phaseDeg: 160, inclinationDeg: 0, color: "#4fb3d8", showLabelByDefault: true },
     textureAssetId: "earth-nasa",
@@ -137,7 +140,13 @@ export const bodies: CelestialBody[] = [
     rotationPeriodHours: 24.6,
     surfaceGravityMs2: 3.71,
     temperatureRangeC: { minC: -153, maxC: 20 },
-    moons: { count: 2, names: [namedMoon("火卫一", "Phobos"), namedMoon("火卫二", "Deimos")] },
+    moons: {
+      count: 2,
+      names: [
+        namedMoon("火卫一", "Phobos", "距离火星更近，轨道正在缓慢降低，外形不规则。", "The closer Martian moon; its orbit is slowly shrinking and its shape is irregular."),
+        namedMoon("火卫二", "Deimos", "更小且轨道更远，表面覆盖细碎风化物。", "The smaller, more distant Martian moon, with a surface covered by fine regolith.")
+      ]
+    },
     axialTiltDeg: 25.19,
     orbit: { semiMajorAxisAu: 1.52, displayDistance: 20, displayRadius: 0.52, orbitalPeriodDays: 687, phaseDeg: 250, inclinationDeg: 1.85, color: "#c66b4e", showLabelByDefault: true },
     textureAssetId: "mars-nasa",
@@ -164,7 +173,12 @@ export const bodies: CelestialBody[] = [
     temperatureRangeC: { minC: -145, maxC: -108 },
     moons: {
       count: 101,
-      names: [namedMoon("木卫一", "Io"), namedMoon("木卫二", "Europa"), namedMoon("木卫三", "Ganymede"), namedMoon("木卫四", "Callisto")],
+      names: [
+        namedMoon("木卫一", "Io", "太阳系火山活动最强的天体之一，受木星潮汐加热。", "One of the most volcanically active worlds, heated by Jupiter's tides."),
+        namedMoon("木卫二", "Europa", "冰壳下可能存在全球性地下海洋，是宜居环境研究重点。", "Likely hides a global ocean beneath ice, making it a major habitability target."),
+        namedMoon("木卫三", "Ganymede", "太阳系最大的卫星，甚至大于水星，并拥有自身磁场。", "The largest moon in the Solar System, larger than Mercury, with its own magnetic field."),
+        namedMoon("木卫四", "Callisto", "古老且布满撞击坑，记录了早期太阳系撞击历史。", "An ancient, heavily cratered moon preserving early impact history.")
+      ],
       note: { zh: "列出伽利略四大卫星；其余为已确认小卫星。", en: "Lists the four Galilean moons; the rest are confirmed smaller moons." }
     },
     axialTiltDeg: 3.13,
@@ -193,7 +207,13 @@ export const bodies: CelestialBody[] = [
     temperatureRangeC: { minC: -185, maxC: -122 },
     moons: {
       count: 274,
-      names: [namedMoon("土卫六", "Titan"), namedMoon("土卫二", "Enceladus"), namedMoon("土卫一", "Mimas"), namedMoon("土卫五", "Rhea"), namedMoon("土卫八", "Iapetus")],
+      names: [
+        namedMoon("土卫六", "Titan", "拥有浓厚大气，表面存在液态烃湖和复杂有机化学。", "Has a thick atmosphere, liquid hydrocarbon lakes, and complex organic chemistry."),
+        namedMoon("土卫二", "Enceladus", "从南极喷出含水羽流，指向冰壳下的地下海洋。", "Ejects water-rich plumes from its south pole, pointing to an ocean below the ice."),
+        namedMoon("土卫一", "Mimas", "以巨大的赫歇尔撞击坑闻名，外观像被重击过的冰质卫星。", "Known for the huge Herschel crater on this heavily battered icy moon."),
+        namedMoon("土卫五", "Rhea", "土星第二大卫星，表面布满撞击坑和明亮冰质地形。", "Saturn's second-largest moon, with cratered and bright icy terrain."),
+        namedMoon("土卫八", "Iapetus", "具有强烈明暗半球差异和突出的赤道山脊。", "Shows a stark bright-dark hemispheric contrast and a prominent equatorial ridge.")
+      ],
       note: { zh: "列出代表性卫星；土星还有大量已确认小卫星。", en: "Lists representative moons; Saturn also has many confirmed smaller moons." }
     },
     axialTiltDeg: 26.73,
@@ -222,7 +242,13 @@ export const bodies: CelestialBody[] = [
     temperatureRangeC: { minC: -224, maxC: -197 },
     moons: {
       count: 28,
-      names: [namedMoon("米兰达", "Miranda"), namedMoon("艾瑞尔", "Ariel"), namedMoon("乌姆柏里厄尔", "Umbriel"), namedMoon("泰坦尼亚", "Titania"), namedMoon("奥伯龙", "Oberon")]
+      names: [
+        namedMoon("米兰达", "Miranda", "地貌破碎复杂，可能经历过强烈构造活动。", "Has fractured, complex terrain that may record intense geologic activity."),
+        namedMoon("艾瑞尔", "Ariel", "表面较明亮，峡谷和断裂显示曾有地质更新。", "A relatively bright moon with canyons and fractures suggesting resurfacing."),
+        namedMoon("乌姆柏里厄尔", "Umbriel", "较暗且撞击坑丰富，可能保存更古老表面。", "A darker, heavily cratered moon that may preserve an older surface."),
+        namedMoon("泰坦尼亚", "Titania", "天王星最大卫星，拥有峡谷和断层系统。", "Uranus' largest moon, marked by canyons and fault systems."),
+        namedMoon("奥伯龙", "Oberon", "外侧大卫星，表面有大量古老撞击坑。", "An outer major moon with many ancient impact craters.")
+      ]
     },
     axialTiltDeg: 97.77,
     orbit: { semiMajorAxisAu: 19.2, displayDistance: 50, displayRadius: 1.0, orbitalPeriodDays: 30687, phaseDeg: 180, inclinationDeg: 0.77, color: "#85d7df", showLabelByDefault: true },
@@ -250,7 +276,13 @@ export const bodies: CelestialBody[] = [
     temperatureRangeC: { minC: -218, maxC: -200 },
     moons: {
       count: 16,
-      names: [namedMoon("海卫一", "Triton"), namedMoon("普罗透斯", "Proteus"), namedMoon("涅瑞伊得", "Nereid"), namedMoon("拉里萨", "Larissa"), namedMoon("海马", "Hippocamp")]
+      names: [
+        namedMoon("海卫一", "Triton", "沿逆行轨道运行，可能是被捕获的柯伊伯带天体。", "Moves in a retrograde orbit and may be a captured Kuiper Belt object."),
+        namedMoon("普罗透斯", "Proteus", "海王星较大的内侧卫星，形状不规则。", "A larger inner moon of Neptune with an irregular shape."),
+        namedMoon("涅瑞伊得", "Nereid", "轨道偏心率很高，是海王星系统动力学线索。", "Has a highly eccentric orbit, offering clues to Neptune-system dynamics."),
+        namedMoon("拉里萨", "Larissa", "靠近海王星的内侧不规则卫星。", "An irregular inner moon orbiting close to Neptune."),
+        namedMoon("海马", "Hippocamp", "体积很小，可能与更大卫星碎片历史有关。", "A tiny moon that may relate to fragment history from larger moons.")
+      ]
     },
     axialTiltDeg: 28.32,
     orbit: { semiMajorAxisAu: 30.05, displayDistance: 60, displayRadius: 0.98, orbitalPeriodDays: 60190, phaseDeg: 310, inclinationDeg: 1.77, color: "#4778d8", showLabelByDefault: true },
