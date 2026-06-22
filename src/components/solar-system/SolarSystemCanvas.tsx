@@ -8,6 +8,7 @@ import { bodies } from "@/data/bodies";
 import { dictionaries } from "@/i18n/dictionaries";
 import type { Vector3Tuple } from "@/lib/orbits";
 import type { CameraPreset, LayerKey, Locale } from "@/types/domain";
+import { AsteroidBelt } from "./AsteroidBelt";
 import { CelestialBodyMesh } from "./CelestialBodyMesh";
 import { OrbitLine } from "./OrbitLine";
 import { getOrbitCenter } from "./scene-helpers";
@@ -28,10 +29,7 @@ interface SolarSystemCanvasProps {
 }
 
 const cameraPresetViews: Record<CameraPreset, CameraPresetView> = {
-  full: { position: [0, 38, 68], target: [0, 0, 0] },
-  inner: { position: [0, 20, 32], target: [0, 0, 0] },
-  earthMoon: { position: [10, 9, 18], target: [-14, 0, 4] },
-  outer: { position: [0, 58, 96], target: [0, 0, 0] }
+  full: { position: [0, 74, 92], target: [0, 0, 0] }
 };
 
 export function getCameraPresetView(cameraPreset: CameraPreset): CameraPresetView {
@@ -66,12 +64,13 @@ export function SolarSystemCanvas({ locale, elapsedDays, cameraPreset, selectedB
   const initialCameraView = getCameraPresetView(cameraPreset);
 
   return (
-    <section className="relative min-h-[520px] overflow-hidden rounded-ui border border-white/10 bg-black">
-      <Canvas camera={{ position: initialCameraView.position, fov: 48 }} dpr={[1, 1.7]}>
+    <section className="relative h-[min(78vh,820px)] min-h-[620px] overflow-hidden rounded-ui border border-white/10 bg-[#03050b]">
+      <Canvas camera={{ position: initialCameraView.position, fov: 52 }} dpr={[1, 1.7]} gl={{ antialias: true }}>
         <color attach="background" args={["#03050b"]} />
         <ambientLight intensity={0.24} />
         <pointLight position={[0, 0, 0]} intensity={800} color="#f8c45c" />
         <Stars />
+        {layers.orbits ? <AsteroidBelt /> : null}
         {layers.orbits
           ? bodies.map((body) => (body.orbit && !body.parentId ? <OrbitLine key={`${body.id}-orbit`} orbit={body.orbit} center={getOrbitCenter(body, bodies, elapsedDays)} /> : null))
           : null}

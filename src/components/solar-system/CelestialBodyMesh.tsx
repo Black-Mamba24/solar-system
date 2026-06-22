@@ -45,7 +45,7 @@ export function CelestialBodyMesh({ body, bodies, locale, elapsedDays, showLabel
         </mesh>
       ) : null}
       {showLabel ? (
-        <Html center distanceFactor={10}>
+        <Html center distanceFactor={10} position={[0, -(radius + 0.52), 0]}>
           <span className="rounded-ui bg-black/55 px-2 py-1 text-xs text-white">{body.name[locale]}</span>
         </Html>
       ) : null}

@@ -22,8 +22,15 @@ describe("data integrity", () => {
       expect(body.name.en).toBeTruthy();
       expect(body.content.zh.summary).toBeTruthy();
       expect(body.content.en.summary).toBeTruthy();
-      expect(body.content.zh.facts.length).toBeGreaterThanOrEqual(3);
-      expect(body.content.en.facts.length).toBeGreaterThanOrEqual(3);
+    }
+  });
+
+  it("keeps Chinese star and planet descriptions substantial", () => {
+    for (const body of bodies.filter((item) => item.type === "star" || item.type === "planet")) {
+      const length = body.content.zh.summary.length;
+
+      expect(length, body.id).toBeGreaterThanOrEqual(400);
+      expect(length, body.id).toBeLessThanOrEqual(500);
     }
   });
 
@@ -105,7 +112,14 @@ describe("data integrity", () => {
   it("includes basic physical metadata for all non-sun bodies", () => {
     const missingMetadata = bodies
       .filter((body) => body.id !== "sun")
-      .filter((body) => !body.massKg || body.axialTiltDeg === undefined)
+      .filter(
+        (body) =>
+          !body.massKg ||
+          body.axialTiltDeg === undefined ||
+          body.surfaceGravityMs2 === undefined ||
+          !body.temperatureRangeC ||
+          !body.moons
+      )
       .map((body) => body.id);
 
     expect(missingMetadata).toEqual([]);

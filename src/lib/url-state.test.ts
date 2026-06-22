@@ -7,13 +7,14 @@ describe("url state", () => {
     expect(state).toEqual({
       locale: "en",
       selectedBodyId: "earth",
-      camera: "inner",
+      camera: "full",
       layers: { labels: false, orbits: true, moonOrbit: false }
     });
   });
 
-  it("parses supported camera presets explicitly", () => {
-    expect(parseUrlState(new URLSearchParams("camera=earthMoon")).camera).toBe("earthMoon");
+  it("normalizes every camera value to the full overview", () => {
+    expect(parseUrlState(new URLSearchParams("camera=earthMoon")).camera).toBe("full");
+    expect(parseUrlState(new URLSearchParams("camera=outer")).camera).toBe("full");
     expect(parseUrlState(new URLSearchParams("camera=full")).camera).toBe("full");
   });
 
@@ -34,9 +35,9 @@ describe("url state", () => {
       serializeUrlState({
         locale: "en",
         selectedBodyId: "mars",
-        camera: "outer",
+        camera: "full",
         layers: { labels: true, orbits: false, moonOrbit: true }
       })
-    ).toBe("?lang=en&body=mars&camera=outer&labels=1&orbits=0&moonOrbit=1");
+    ).toBe("?lang=en&body=mars&camera=full&labels=1&orbits=0&moonOrbit=1");
   });
 });

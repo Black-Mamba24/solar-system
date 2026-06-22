@@ -1,23 +1,20 @@
 import React from "react";
 import { Pause, Play } from "lucide-react";
 import { dictionaries } from "@/i18n/dictionaries";
-import type { CameraPreset, LayerKey, Locale } from "@/types/domain";
+import type { LayerKey, Locale } from "@/types/domain";
 
 interface ControlBarProps {
   locale: Locale;
   playing: boolean;
   elapsedDays: number;
   speed: number;
-  camera: CameraPreset;
   layers: Record<LayerKey, boolean>;
   onPlayingChange: (playing: boolean) => void;
   onElapsedDaysChange: (days: number) => void;
   onSpeedChange: (speed: number) => void;
-  onCameraChange: (camera: CameraPreset) => void;
   onLayerChange: (layer: LayerKey, enabled: boolean) => void;
 }
 
-const cameraPresets: CameraPreset[] = ["full", "inner", "earthMoon", "outer"];
 const layerKeys: LayerKey[] = ["labels", "orbits", "moonOrbit"];
 const speedOptions = [0, 1, 7, 30];
 
@@ -26,12 +23,10 @@ export function ControlBar({
   playing,
   elapsedDays,
   speed,
-  camera,
   layers,
   onPlayingChange,
   onElapsedDaysChange,
   onSpeedChange,
-  onCameraChange,
   onLayerChange
 }: ControlBarProps) {
   const dictionary = dictionaries[locale];
@@ -74,24 +69,6 @@ export function ControlBar({
           ))}
         </select>
       </div>
-
-      <fieldset className="mt-4">
-        <legend className="text-xs uppercase tracking-[0.18em] text-slate-400">{dictionary.controls.camera}</legend>
-        <div className="mt-2 flex flex-wrap gap-2">
-          {cameraPresets.map((preset) => (
-            <button
-              key={preset}
-              type="button"
-              className={`rounded-ui px-3 py-2 text-sm transition ${
-                camera === preset ? "bg-white text-black" : "bg-white/10 text-white hover:bg-white/15"
-              }`}
-              onClick={() => onCameraChange(preset)}
-            >
-              {dictionary.cameraPresets[preset]}
-            </button>
-          ))}
-        </div>
-      </fieldset>
 
       <fieldset className="mt-4">
         <legend className="text-xs uppercase tracking-[0.18em] text-slate-400">{dictionary.controls.layers}</legend>

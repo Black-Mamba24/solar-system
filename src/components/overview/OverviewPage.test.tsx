@@ -50,7 +50,11 @@ describe("OverviewPage", () => {
     expect(screen.getByRole("heading", { name: "地球" })).toBeInTheDocument();
     expect(screen.getByText("半径")).toBeInTheDocument();
     expect(screen.getByText("平均日距")).toBeInTheDocument();
-    expect(screen.getByText("为什么重要")).toBeInTheDocument();
+    expect(screen.getByText("重力加速度")).toBeInTheDocument();
+    expect(screen.getByText("卫星")).toBeInTheDocument();
+    expect(screen.getByText("温度范围")).toBeInTheDocument();
+    expect(screen.queryByText("为什么重要")).not.toBeInTheDocument();
+    expect(screen.queryByText("要点")).not.toBeInTheDocument();
   });
 
   it("initializes overview state from the URL", () => {
@@ -59,7 +63,7 @@ describe("OverviewPage", () => {
     render(<OverviewPage locale="en" />);
 
     expect(screen.getByRole("heading", { name: "Mars" })).toBeInTheDocument();
-    expect(screen.getByText("mock camera outer")).toBeInTheDocument();
+    expect(screen.getByText("mock camera full")).toBeInTheDocument();
     expect(screen.getByLabelText("Labels")).not.toBeChecked();
     expect(screen.getByLabelText("Orbits")).toBeChecked();
     expect(screen.getByLabelText("Moon orbit")).not.toBeChecked();
@@ -72,23 +76,22 @@ describe("OverviewPage", () => {
     fireEvent.click(screen.getByRole("button", { name: "mock canvas" }));
 
     expect(screen.getByRole("heading", { name: "Mars" })).toBeInTheDocument();
-    expect(screen.getByText("Mars is a cold, dry rocky planet with a reddish color from iron oxides.")).toBeInTheDocument();
+    expect(screen.getByText(/Mars is a cold, dry rocky planet/)).toBeInTheDocument();
     expect(screen.getByText("Avg. solar distance")).toBeInTheDocument();
     expect(navigationMocks.replace).toHaveBeenLastCalledWith("/overview?lang=en&body=mars&camera=full&labels=1&orbits=1&moonOrbit=1", {
       scroll: false
     });
   });
 
-  it("updates camera styling, scene prop, and URL from camera buttons", () => {
+  it("keeps only the full camera view", () => {
     navigationMocks.searchParams = new URLSearchParams("lang=en");
 
     render(<OverviewPage locale="en" />);
-    fireEvent.click(screen.getByRole("button", { name: "Outer planets" }));
 
-    expect(screen.getByText("mock camera outer")).toBeInTheDocument();
-    expect(navigationMocks.replace).toHaveBeenLastCalledWith("/overview?lang=en&body=earth&camera=outer&labels=1&orbits=1&moonOrbit=1", {
-      scroll: false
-    });
+    expect(screen.getByText("mock camera full")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Outer planets" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Inner planets" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Earth and Moon" })).not.toBeInTheDocument();
   });
 
   it("updates layer state and URL from layer checkboxes", () => {
@@ -113,7 +116,7 @@ describe("OverviewPage", () => {
     rerender(<OverviewPage locale="en" />);
 
     await waitFor(() => expect(screen.getByRole("heading", { name: "Mars" })).toBeInTheDocument());
-    expect(screen.getByText("mock camera outer")).toBeInTheDocument();
+    expect(screen.getByText("mock camera full")).toBeInTheDocument();
     expect(screen.getByLabelText("Labels")).not.toBeChecked();
     expect(screen.getByLabelText("Moon orbit")).not.toBeChecked();
   });

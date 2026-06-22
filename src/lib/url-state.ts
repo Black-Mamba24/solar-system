@@ -8,10 +8,8 @@ export interface UrlState {
   layers: Record<LayerKey, boolean>;
 }
 
-const cameraPresets: CameraPreset[] = ["full", "inner", "earthMoon", "outer"];
-
 function parseCamera(value: string | null): CameraPreset {
-  return cameraPresets.includes(value as CameraPreset) ? (value as CameraPreset) : "full";
+  return "full";
 }
 
 function parseFlag(value: string | null, fallback: boolean): boolean {

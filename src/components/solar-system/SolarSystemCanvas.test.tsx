@@ -1,6 +1,6 @@
 import React from "react";
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { bodies } from "@/data/bodies";
 import { CelestialBodyMesh } from "./CelestialBodyMesh";
 import { getCameraPresetView, SolarSystemCanvas } from "./SolarSystemCanvas";
@@ -11,17 +11,33 @@ const dreiMocks = vi.hoisted(() => ({
 }));
 
 vi.mock("@react-three/fiber", () => ({
-  Canvas: () => <div data-testid="canvas" />,
-  useFrame: () => undefined
+  Canvas: ({ children }: { children: React.ReactNode }) => <div data-testid="canvas">{children}</div>,
+  useFrame: () => undefined,
+  useThree: () => ({
+    camera: {
+      position: { set: vi.fn() },
+      lookAt: vi.fn()
+    }
+  })
 }));
 
 vi.mock("@react-three/drei", () => ({
   OrbitControls: () => <div data-testid="orbit-controls" />,
-  Html: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  Html: ({ children, position }: { children: React.ReactNode; position?: [number, number, number] }) => (
+    <div data-html-position={position?.join(",")}>{children}</div>
+  ),
   useTexture: dreiMocks.useTexture
 }));
 
 describe("SolarSystemCanvas", () => {
+  beforeEach(() => {
+    vi.spyOn(console, "error").mockImplementation(() => undefined);
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it("renders the scene container and compressed scale notice", () => {
     render(
       <SolarSystemCanvas
@@ -36,6 +52,21 @@ describe("SolarSystemCanvas", () => {
 
     expect(screen.getByTestId("canvas")).toBeInTheDocument();
     expect(screen.getByText("比例经过教学压缩")).toBeInTheDocument();
+  });
+
+  it("includes the main asteroid belt in the full scene", () => {
+    render(
+      <SolarSystemCanvas
+        locale="en"
+        elapsedDays={0}
+        cameraPreset="full"
+        selectedBodyId="earth"
+        layers={{ labels: true, orbits: true, moonOrbit: true }}
+        onSelectBody={() => undefined}
+      />
+    );
+
+    expect(document.querySelector('points[name="asteroid-belt"]')).toBeInTheDocument();
   });
 
   it("positions child bodies relative to their parent body", () => {
@@ -79,10 +110,25 @@ describe("SolarSystemCanvas", () => {
     expect(dreiMocks.useTexture).not.toHaveBeenCalled();
   });
 
-  it("provides camera views for each overview preset", () => {
-    expect(getCameraPresetView("full")).toEqual({ position: [0, 38, 68], target: [0, 0, 0] });
-    expect(getCameraPresetView("inner")).toEqual({ position: [0, 20, 32], target: [0, 0, 0] });
-    expect(getCameraPresetView("earthMoon")).toEqual({ position: [10, 9, 18], target: [-14, 0, 4] });
-    expect(getCameraPresetView("outer")).toEqual({ position: [0, 58, 96], target: [0, 0, 0] });
+  it("places labels below the clickable body mesh", () => {
+    const earth = bodies.find((body) => body.id === "earth")!;
+
+    render(
+      <CelestialBodyMesh
+        body={earth}
+        bodies={bodies}
+        locale="en"
+        elapsedDays={0}
+        selected={false}
+        showLabel={true}
+        onSelectBody={() => undefined}
+      />
+    );
+
+    expect(screen.getByText("Earth").parentElement).toHaveAttribute("data-html-position", `0,${-(earth.orbit!.displayRadius + 0.52)},0`);
+  });
+
+  it("provides a single full overview camera", () => {
+    expect(getCameraPresetView("full")).toEqual({ position: [0, 74, 92], target: [0, 0, 0] });
   });
 });

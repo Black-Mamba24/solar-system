@@ -17,6 +17,10 @@ function getValidBodyId(bodyId: string | undefined): string {
   return bodies.some((body) => body.id === bodyId) ? bodyId! : "earth";
 }
 
+function serializeUiState(state: { selectedBodyId: string; camera: CameraPreset; layers: Record<LayerKey, boolean> }): string {
+  return JSON.stringify(state);
+}
+
 export function isWebGLAvailable(): boolean {
   if (typeof document === "undefined") {
     return true;
@@ -46,6 +50,7 @@ export function OverviewPage({ locale }: { locale: Locale }) {
   const [speed, setSpeed] = useState(7);
   const [camera, setCamera] = useState<CameraPreset>(urlState.camera);
   const [layers, setLayers] = useState<Record<LayerKey, boolean>>(urlState.layers);
+  const lastSyncedUiState = useRef(serializeUiState({ selectedBodyId, camera, layers }));
 
   const selectedBody = useMemo(() => bodies.find((body) => body.id === selectedBodyId) ?? bodies.find((body) => body.id === "earth") ?? bodies[0], [selectedBodyId]);
   const urlBodyId = getValidBodyId(urlState.selectedBodyId);
@@ -72,12 +77,21 @@ export function OverviewPage({ locale }: { locale: Locale }) {
     setSelectedBodyId(urlBodyId);
     setCamera(urlState.camera);
     setLayers(urlState.layers);
+    lastSyncedUiState.current = serializeUiState({ selectedBodyId: urlBodyId, camera: urlState.camera, layers: urlState.layers });
   }, [searchParamString, searchParamsChanged, urlBodyId, urlState.camera, urlState.layers]);
 
   useEffect(() => {
     if (searchParamsChanged) {
       return;
     }
+
+    const currentUiState = serializeUiState({ selectedBodyId, camera, layers });
+
+    if (currentUiState === lastSyncedUiState.current) {
+      return;
+    }
+
+    lastSyncedUiState.current = currentUiState;
 
     const serializedState = serializeUrlState({
       locale: activeLocale,
@@ -122,12 +136,10 @@ export function OverviewPage({ locale }: { locale: Locale }) {
             playing={playing}
             elapsedDays={elapsedDays}
             speed={speed}
-            camera={camera}
             layers={layers}
             onPlayingChange={setPlaying}
             onElapsedDaysChange={setElapsedDays}
             onSpeedChange={setSpeed}
-            onCameraChange={setCamera}
             onLayerChange={(layer, enabled) => setLayers((currentLayers) => ({ ...currentLayers, [layer]: enabled }))}
           />
         </div>

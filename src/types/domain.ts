@@ -4,7 +4,7 @@ export type ModuleStatus = "available" | "comingSoon";
 
 export type BodyType = "star" | "planet" | "moon";
 
-export type CameraPreset = "full" | "inner" | "earthMoon" | "outer";
+export type CameraPreset = "full";
 
 export type LayerKey = "labels" | "orbits" | "moonOrbit";
 
@@ -48,8 +48,17 @@ export interface OrbitData {
 
 export interface BodyContent {
   summary: string;
-  whyItMatters: string;
-  facts: string[];
+}
+
+export interface TemperatureRange {
+  minC: number;
+  maxC: number;
+}
+
+export interface MoonSet {
+  count: number;
+  names: LocalizedText[];
+  note?: LocalizedText;
 }
 
 export interface CelestialBody {
@@ -60,6 +69,9 @@ export interface CelestialBody {
   massKg?: string;
   averageDistanceFromSunKm?: number;
   rotationPeriodHours?: number;
+  surfaceGravityMs2?: number;
+  temperatureRangeC?: TemperatureRange;
+  moons?: MoonSet;
   axialTiltDeg?: number;
   orbit?: OrbitData;
   parentId?: string;

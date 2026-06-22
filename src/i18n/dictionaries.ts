@@ -24,8 +24,15 @@ export interface AppDictionary {
   bodyInfo: {
     radius: string;
     averageDistanceFromSun: string;
-    whyItMatters: string;
-    facts: string;
+    surfaceGravity: string;
+    moons: string;
+    temperatureRange: string;
+    rotationPeriod: string;
+    orbitalPeriod: string;
+    earthComparison: string;
+    earthBaseline: string;
+    noMoons: string;
+    notApplicable: string;
   };
   bodyTypes: {
     star: string;
@@ -69,8 +76,15 @@ export const dictionaries = {
     bodyInfo: {
       radius: "半径",
       averageDistanceFromSun: "平均日距",
-      whyItMatters: "为什么重要",
-      facts: "要点"
+      surfaceGravity: "重力加速度",
+      moons: "卫星",
+      temperatureRange: "温度范围",
+      rotationPeriod: "自转周期",
+      orbitalPeriod: "公转周期",
+      earthComparison: "约为地球的",
+      earthBaseline: "地球基准",
+      noMoons: "无天然卫星",
+      notApplicable: "不适用"
     },
     bodyTypes: {
       star: "恒星",
@@ -112,8 +126,15 @@ export const dictionaries = {
     bodyInfo: {
       radius: "Radius",
       averageDistanceFromSun: "Avg. solar distance",
-      whyItMatters: "Why it matters",
-      facts: "Facts"
+      surfaceGravity: "Surface gravity",
+      moons: "Moons",
+      temperatureRange: "Temperature range",
+      rotationPeriod: "Rotation period",
+      orbitalPeriod: "Orbital period",
+      earthComparison: "about Earth x",
+      earthBaseline: "Earth baseline",
+      noMoons: "No natural moons",
+      notApplicable: "N/A"
     },
     bodyTypes: {
       star: "Star",
