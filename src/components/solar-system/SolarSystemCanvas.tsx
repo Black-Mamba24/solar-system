@@ -31,8 +31,9 @@ interface SolarSystemCanvasProps {
 const cameraPresetViews: Record<CameraPreset, CameraPresetView> = {
   full: { position: [0, 74, 92], target: [0, 0, 0] }
 };
-const minCameraDistance = 14.4;
+const minCameraDistance = 11.1;
 const maxCameraDistance = 120;
+const maxScaleAu = 10;
 
 export function getCameraPresetView(cameraPreset: CameraPreset): CameraPresetView {
   return cameraPresetViews[cameraPreset];
@@ -84,6 +85,7 @@ export function SolarSystemCanvas({ locale, elapsedDays, cameraPreset, selectedB
   const controlsRef = useRef<OrbitControlsImpl | null>(null);
   const initialCameraView = getCameraPresetView(cameraPreset);
   const [zoomProgress, setZoomProgress] = useState(1);
+  const currentScaleAu = Math.max(0.1, zoomProgress * maxScaleAu);
 
   return (
     <section className="relative h-[min(78vh,820px)] min-h-[620px] overflow-hidden rounded-ui border border-white/10 bg-[#03050b]">
@@ -135,6 +137,9 @@ export function SolarSystemCanvas({ locale, elapsedDays, cameraPreset, selectedB
             className="absolute top-0 h-0 w-0 -translate-x-1/2 border-x-[5px] border-t-[8px] border-x-transparent border-t-orbit transition-[left] duration-150 ease-out"
             style={{ left: `${zoomProgress * 100}%` }}
           />
+          <span className="absolute -top-5 -translate-x-1/2 whitespace-nowrap rounded bg-black/70 px-1.5 py-0.5 text-[0.65rem] text-white" style={{ left: `${zoomProgress * 100}%` }}>
+            {currentScaleAu.toFixed(1)} AU
+          </span>
         </div>
         <p className="mt-1 text-right text-white">10 AU</p>
       </div>

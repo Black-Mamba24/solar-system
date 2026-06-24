@@ -60,6 +60,7 @@ describe("SolarSystemCanvas", () => {
     expect(screen.getByText("缩放比例尺")).toBeInTheDocument();
     expect(screen.getByText("10 AU")).toBeInTheDocument();
     expect(screen.getByLabelText("当前缩放位置")).toBeInTheDocument();
+    expect(screen.getByText("10.0 AU")).toBeInTheDocument();
   });
 
   it("includes the main asteroid belt in the full scene", () => {
@@ -153,7 +154,7 @@ describe("SolarSystemCanvas", () => {
       />
     );
 
-    expect(dreiMocks.orbitControlsProps.at(-1)).toMatchObject({ zoomToCursor: true, minDistance: 14.4 });
+    expect(dreiMocks.orbitControlsProps.at(-1)).toMatchObject({ zoomToCursor: true, minDistance: 11.1 });
   });
 
   it("uses an ocean-blue fallback color for Earth", () => {
