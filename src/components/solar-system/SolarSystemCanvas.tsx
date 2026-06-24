@@ -1,8 +1,8 @@
 "use client";
 
 import { OrbitControls } from "@react-three/drei";
-import { Canvas, useThree } from "@react-three/fiber";
-import React, { useEffect, useRef } from "react";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import React, { useEffect, useRef, useState } from "react";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import { bodies } from "@/data/bodies";
 import { dictionaries } from "@/i18n/dictionaries";
@@ -31,6 +31,8 @@ interface SolarSystemCanvasProps {
 const cameraPresetViews: Record<CameraPreset, CameraPresetView> = {
   full: { position: [0, 74, 92], target: [0, 0, 0] }
 };
+const minCameraDistance = 14.4;
+const maxCameraDistance = 120;
 
 export function getCameraPresetView(cameraPreset: CameraPreset): CameraPresetView {
   return cameraPresetViews[cameraPreset];
@@ -59,9 +61,29 @@ function CameraPresetController({
   return null;
 }
 
+function ZoomScaleTracker({
+  controlsRef,
+  onProgressChange
+}: {
+  controlsRef: React.MutableRefObject<OrbitControlsImpl | null>;
+  onProgressChange: (progress: number) => void;
+}) {
+  const { camera } = useThree();
+
+  useFrame(() => {
+    const target = controlsRef.current?.target;
+    const distance = target ? camera.position.distanceTo(target) : camera.position.length();
+    const progress = Math.max(0, Math.min(1, (distance - minCameraDistance) / (maxCameraDistance - minCameraDistance)));
+    onProgressChange(progress);
+  });
+
+  return null;
+}
+
 export function SolarSystemCanvas({ locale, elapsedDays, cameraPreset, selectedBodyId, layers, onSelectBody }: SolarSystemCanvasProps) {
   const controlsRef = useRef<OrbitControlsImpl | null>(null);
   const initialCameraView = getCameraPresetView(cameraPreset);
+  const [zoomProgress, setZoomProgress] = useState(1);
 
   return (
     <section className="relative h-[min(78vh,820px)] min-h-[620px] overflow-hidden rounded-ui border border-white/10 bg-[#03050b]">
@@ -90,12 +112,13 @@ export function SolarSystemCanvas({ locale, elapsedDays, cameraPreset, selectedB
           />
         ))}
         <CameraPresetController cameraPreset={cameraPreset} controlsRef={controlsRef} />
+        <ZoomScaleTracker controlsRef={controlsRef} onProgressChange={setZoomProgress} />
         <OrbitControls
           ref={controlsRef}
           enableDamping
           dampingFactor={0.08}
-          minDistance={18}
-          maxDistance={120}
+          minDistance={minCameraDistance}
+          maxDistance={maxCameraDistance}
           target={initialCameraView.target}
           zoomToCursor
         />
@@ -105,7 +128,14 @@ export function SolarSystemCanvas({ locale, elapsedDays, cameraPreset, selectedB
       </p>
       <div className="absolute bottom-3 right-3 rounded-ui bg-black/60 px-3 py-2 text-xs text-slate-200">
         <p className="mb-1 text-[0.68rem] uppercase tracking-[0.14em] text-slate-400">{locale === "zh" ? "缩放比例尺" : "Zoom scale"}</p>
-        <div className="h-1 w-24 rounded-full bg-white/80" />
+        <div className="relative h-3 w-24">
+          <div className="absolute left-0 top-1 h-1 w-full rounded-full bg-white/80" />
+          <div
+            aria-label={locale === "zh" ? "当前缩放位置" : "Current zoom position"}
+            className="absolute top-0 h-0 w-0 -translate-x-1/2 border-x-[5px] border-t-[8px] border-x-transparent border-t-orbit transition-[left] duration-150 ease-out"
+            style={{ left: `${zoomProgress * 100}%` }}
+          />
+        </div>
         <p className="mt-1 text-right text-white">10 AU</p>
       </div>
     </section>

@@ -50,6 +50,8 @@ describe("BodyInfoPanel", () => {
 
     expect(items.length).toBeGreaterThanOrEqual(2);
     expect(items[0]).toHaveTextContent("土卫六（泰坦）");
+    expect(items[0].textContent?.startsWith("规则卫星")).toBe(false);
+    expect(items[0]).toHaveTextContent("规则卫星中最大的一颗");
     expect(items[0]).toHaveTextContent("浓厚大气");
     expect(items[1]).toHaveTextContent("土卫二（恩克拉多斯）");
     expect(items[1]).toHaveTextContent("含水羽流");
@@ -64,6 +66,7 @@ describe("BodyInfoPanel", () => {
     expect(moonsCard).toHaveTextContent("内卫星");
     expect(moonsCard).toHaveTextContent("不规则卫星");
     expect(moonsCard).toHaveTextContent("天卫一（艾瑞尔）");
+    expect(within(moonsCard!).getByText(/天卫一（艾瑞尔）/).textContent?.startsWith("主群卫星")).toBe(false);
 
     rerender(<BodyInfoPanel body={bodyById("jupiter")} locale="zh" />);
     moonsCard = screen.getByText("卫星").closest("div");

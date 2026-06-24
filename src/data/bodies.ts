@@ -252,7 +252,7 @@ export const bodies: CelestialBody[] = [
     moons: {
       count: 292,
       names: [
-        namedMoon("土卫六（泰坦）", "Titan", "拥有浓厚大气，表面存在液态烃湖和复杂有机化学，是外太阳系最像行星的卫星之一。", "Has a thick atmosphere, liquid hydrocarbon lakes, and complex organic chemistry.", regularMoons),
+        namedMoon("土卫六（泰坦）", "Titan", "是土星规则卫星中最大的一颗，拥有浓厚大气，表面存在液态烃湖和复杂有机化学。", "The largest of Saturn's regular moons, with a thick atmosphere, liquid hydrocarbon lakes, and complex organic chemistry.", regularMoons),
         namedMoon("土卫二（恩克拉多斯）", "Enceladus", "从南极喷出含水羽流，指向冰壳下的地下海洋，是宜居环境研究重点。", "Ejects water-rich plumes from its south pole, pointing to an ocean below the ice.", regularMoons),
         namedMoon("土卫一（弥玛斯）", "Mimas", "以巨大的赫歇尔撞击坑闻名，展示小型冰质卫星被强烈撞击后的形态。", "Known for the huge Herschel crater on this heavily battered icy moon.", regularMoons),
         namedMoon("土卫五（瑞亚）", "Rhea", "土星第二大卫星，表面布满撞击坑和明亮冰质地形。", "Saturn's second-largest moon, with cratered and bright icy terrain.", regularMoons),

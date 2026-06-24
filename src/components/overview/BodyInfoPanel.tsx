@@ -65,6 +65,12 @@ function formatMoonCount(count: number, locale: Locale, numberLocale: string): s
   return locale === "zh" ? `共有 ${count.toLocaleString(numberLocale)} 颗已确认卫星` : `${count.toLocaleString(numberLocale)} confirmed moons`;
 }
 
+function formatMoonDescription(moon: NonNullable<CelestialBody["moons"]>["names"][number], locale: Locale): string {
+  const description = moon.description[locale];
+  if (!moon.category) return description;
+  return locale === "zh" ? `属于${moon.category.zh}。${description}` : `Part of the ${moon.category.en.toLowerCase()}. ${description}`;
+}
+
 export function BodyInfoPanel({ body, locale }: BodyInfoPanelProps) {
   const content = body.content[locale];
   const dictionary = dictionaries[locale];
@@ -132,9 +138,8 @@ export function BodyInfoPanel({ body, locale }: BodyInfoPanelProps) {
                       <ol className="list-decimal space-y-2 pl-5">
                         {body.moons.names.map((moon) => (
                           <li key={moon.name.en}>
-                            {moon.category ? <span className="mr-1 text-slate-300">{moon.category[locale]} ·</span> : null}
                             <span className="font-medium">{moon.name[locale]}</span>
-                            <span className="text-slate-300">：{moon.description[locale]}</span>
+                            <span className="text-slate-300">：{formatMoonDescription(moon, locale)}</span>
                           </li>
                         ))}
                       </ol>
