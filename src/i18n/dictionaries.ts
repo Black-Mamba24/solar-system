@@ -25,6 +25,7 @@ export interface AppDictionary {
     radius: string;
     averageDistanceFromSun: string;
     surfaceGravity: string;
+    atmosphere: string;
     moons: string;
     temperatureRange: string;
     rotationPeriod: string;
@@ -77,6 +78,7 @@ export const dictionaries = {
       radius: "半径",
       averageDistanceFromSun: "平均日距",
       surfaceGravity: "重力加速度",
+      atmosphere: "大气",
       moons: "卫星",
       temperatureRange: "温度范围",
       rotationPeriod: "自转周期",
@@ -127,6 +129,7 @@ export const dictionaries = {
       radius: "Radius",
       averageDistanceFromSun: "Avg. solar distance",
       surfaceGravity: "Surface gravity",
+      atmosphere: "Atmosphere",
       moons: "Moons",
       temperatureRange: "Temperature range",
       rotationPeriod: "Rotation period",

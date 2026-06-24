@@ -60,8 +60,8 @@ export interface MoonSet {
   names: Array<{
     name: LocalizedText;
     description: LocalizedText;
+    category?: LocalizedText;
   }>;
-  note?: LocalizedText;
 }
 
 export interface CelestialBody {
@@ -74,6 +74,7 @@ export interface CelestialBody {
   rotationPeriodHours?: number;
   surfaceGravityMs2?: number;
   temperatureRangeC?: TemperatureRange;
+  atmosphere?: LocalizedText;
   moons?: MoonSet;
   axialTiltDeg?: number;
   orbit?: OrbitData;

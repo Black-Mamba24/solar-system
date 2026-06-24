@@ -61,6 +61,10 @@ function formatDurationFromDays(days: number, locale: Locale): string {
   return `${formatNumber(days, locale, 1)} ${locale === "zh" ? "天" : "days"}`;
 }
 
+function formatMoonCount(count: number, locale: Locale, numberLocale: string): string {
+  return locale === "zh" ? `共有 ${count.toLocaleString(numberLocale)} 颗已确认卫星` : `${count.toLocaleString(numberLocale)} confirmed moons`;
+}
+
 export function BodyInfoPanel({ body, locale }: BodyInfoPanelProps) {
   const content = body.content[locale];
   const dictionary = dictionaries[locale];
@@ -86,6 +90,12 @@ export function BodyInfoPanel({ body, locale }: BodyInfoPanelProps) {
       ? {
           label: dictionary.bodyInfo.surfaceGravity,
           value: formatComparedValue(`${formatNumber(body.surfaceGravityMs2, locale)} m/s²`, body.surfaceGravityMs2 / earthGravityMs2, locale)
+        }
+      : undefined,
+    body.atmosphere
+      ? {
+          label: dictionary.bodyInfo.atmosphere,
+          value: body.atmosphere[locale]
         }
       : undefined,
     body.temperatureRangeC
@@ -118,11 +128,11 @@ export function BodyInfoPanel({ body, locale }: BodyInfoPanelProps) {
               : body.moons.names.length > 1
                 ? (
                     <div className="space-y-2">
-                      <p>{body.moons.count.toLocaleString(numberLocale)}</p>
-                      {body.moons.note ? <p className="text-slate-300">{body.moons.note[locale]}</p> : null}
+                      <p>{formatMoonCount(body.moons.count, locale, numberLocale)}</p>
                       <ol className="list-decimal space-y-2 pl-5">
                         {body.moons.names.map((moon) => (
                           <li key={moon.name.en}>
+                            {moon.category ? <span className="mr-1 text-slate-300">{moon.category[locale]} ·</span> : null}
                             <span className="font-medium">{moon.name[locale]}</span>
                             <span className="text-slate-300">：{moon.description[locale]}</span>
                           </li>

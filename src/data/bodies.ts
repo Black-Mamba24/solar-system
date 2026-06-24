@@ -1,9 +1,20 @@
 import type { CelestialBody, LocalizedText, MoonSet } from "@/types/domain";
 
-const namedMoon = (zh: string, en: string, descriptionZh = "", descriptionEn = "") => ({
+const namedMoon = (zh: string, en: string, descriptionZh = "", descriptionEn = "", category?: LocalizedText) => ({
   name: { zh, en },
-  description: { zh: descriptionZh, en: descriptionEn }
+  description: { zh: descriptionZh, en: descriptionEn },
+  category
 });
+
+const category = (zh: string, en: string): LocalizedText => ({ zh, en });
+
+const majorMoons = category("主要卫星", "Major moons");
+const regularMoons = category("规则卫星", "Regular moons");
+const progradeIrregularMoons = category("顺行不规则卫星", "Prograde irregular moons");
+const retrogradeIrregularMoons = category("逆行不规则卫星", "Retrograde irregular moons");
+const irregularMoons = category("不规则卫星", "Irregular moons");
+const uranusMainMoons = category("主群卫星", "Major moons");
+const uranusInnerMoons = category("内卫星", "Inner moons");
 
 const noMoons: MoonSet = { count: 0, names: [] };
 
@@ -17,6 +28,10 @@ export const bodies: CelestialBody[] = [
     rotationPeriodHours: 648,
     surfaceGravityMs2: 274,
     temperatureRangeC: { minC: 5500, maxC: 15000000 },
+    atmosphere: {
+      zh: "太阳没有行星意义上的大气层，但有光球、色球、过渡区和日冕等外层结构。日冕极热并持续向外释放太阳风，塑造整个太阳系的空间天气环境。",
+      en: "The Sun has no planetary atmosphere, but it does have outer layers including the photosphere, chromosphere, transition region, and corona. The corona drives solar wind and space weather throughout the Solar System."
+    },
     moons: noMoons,
     textureAssetId: "sun-nasa-sdo",
     content: {
@@ -40,6 +55,10 @@ export const bodies: CelestialBody[] = [
     rotationPeriodHours: 1407.6,
     surfaceGravityMs2: 3.7,
     temperatureRangeC: { minC: -173, maxC: 427 },
+    atmosphere: {
+      zh: "水星几乎没有稳定大气，只有由太阳风溅射和微陨石撞击补充的极稀薄外逸层，含钠、钾、氧、氦等原子，无法保温或形成天气。",
+      en: "Mercury has almost no stable atmosphere, only a very thin exosphere supplied by solar-wind sputtering and micrometeorite impacts. It contains atoms such as sodium, potassium, oxygen, and helium, but cannot trap heat or make weather."
+    },
     moons: noMoons,
     axialTiltDeg: 0.034,
     orbit: { semiMajorAxisAu: 0.39, displayDistance: 8, displayRadius: 0.38, orbitalPeriodDays: 88, phaseDeg: 15, inclinationDeg: 7, color: "#9ca3af", showLabelByDefault: true },
@@ -65,6 +84,10 @@ export const bodies: CelestialBody[] = [
     rotationPeriodHours: -5832.5,
     surfaceGravityMs2: 8.87,
     temperatureRangeC: { minC: 462, maxC: 462 },
+    atmosphere: {
+      zh: "金星拥有极厚的二氧化碳大气和硫酸云层，地表气压约为地球海平面的九十多倍。强烈温室效应让地表长期维持极端高温。",
+      en: "Venus has an extremely dense carbon dioxide atmosphere with sulfuric-acid clouds. Surface pressure is more than ninety times Earth's sea-level pressure, and the greenhouse effect keeps the surface intensely hot."
+    },
     moons: noMoons,
     axialTiltDeg: 177.36,
     orbit: { semiMajorAxisAu: 0.72, displayDistance: 11, displayRadius: 0.7, orbitalPeriodDays: 224.7, phaseDeg: 75, inclinationDeg: 3.4, color: "#d6b36a", showLabelByDefault: true },
@@ -90,9 +113,13 @@ export const bodies: CelestialBody[] = [
     rotationPeriodHours: 23.93,
     surfaceGravityMs2: 9.81,
     temperatureRangeC: { minC: -89, maxC: 58 },
+    atmosphere: {
+      zh: "地球大气主要由氮气和氧气组成，并含有水汽、二氧化碳、氩和微量气体。它调节温度、驱动天气和水循环，臭氧层削弱紫外线，磁层与大气共同减轻太阳风影响。",
+      en: "Earth's atmosphere is mostly nitrogen and oxygen, with water vapor, carbon dioxide, argon, and trace gases. It moderates temperature, drives weather and the water cycle, and works with the ozone layer and magnetosphere to protect the surface."
+    },
     moons: { count: 1, names: [namedMoon("月球", "Moon", "地球唯一的天然卫星，影响潮汐并稳定地球自转轴。", "Earth's only natural satellite; it drives tides and helps stabilize Earth's axis.")] },
     axialTiltDeg: 23.44,
-    orbit: { semiMajorAxisAu: 1, displayDistance: 15, displayRadius: 0.75, orbitalPeriodDays: 365.25, phaseDeg: 160, inclinationDeg: 0, color: "#4fb3d8", showLabelByDefault: true },
+    orbit: { semiMajorAxisAu: 1, displayDistance: 15, displayRadius: 0.75, orbitalPeriodDays: 365.25, phaseDeg: 160, inclinationDeg: 0, color: "#0f8fd6", showLabelByDefault: true },
     textureAssetId: "earth-nasa",
     content: {
       zh: {
@@ -116,6 +143,10 @@ export const bodies: CelestialBody[] = [
     rotationPeriodHours: 655.7,
     surfaceGravityMs2: 1.62,
     temperatureRangeC: { minC: -173, maxC: 127 },
+    atmosphere: {
+      zh: "月球没有浓厚大气，只有极稀薄外逸层，包含氦、氖、氩、钠等粒子。它无法产生风雨或稳定保温，因此昼夜温差极大。",
+      en: "The Moon has no thick atmosphere, only a very tenuous exosphere with particles such as helium, neon, argon, and sodium. It cannot produce weather or retain heat, so day-night temperature swings are extreme."
+    },
     moons: noMoons,
     axialTiltDeg: 6.68,
     orbit: { semiMajorAxisAu: 0.00257, displayDistance: 2.1, displayRadius: 0.22, orbitalPeriodDays: 27.3, phaseDeg: 40, inclinationDeg: 5.1, color: "#cbd5e1", showLabelByDefault: false },
@@ -140,11 +171,15 @@ export const bodies: CelestialBody[] = [
     rotationPeriodHours: 24.6,
     surfaceGravityMs2: 3.71,
     temperatureRangeC: { minC: -153, maxC: 20 },
+    atmosphere: {
+      zh: "火星大气很稀薄，主要是二氧化碳，含少量氮气、氩气和水汽。低气压让液态水难以长期稳定存在，但尘埃、云和全球尘暴仍会塑造火星天气。",
+      en: "Mars has a thin atmosphere dominated by carbon dioxide, with smaller amounts of nitrogen, argon, and water vapor. Low pressure prevents stable long-lived liquid water, but dust, clouds, and global dust storms still shape Martian weather."
+    },
     moons: {
       count: 2,
       names: [
-        namedMoon("火卫一", "Phobos", "距离火星更近，轨道正在缓慢降低，外形不规则。", "The closer Martian moon; its orbit is slowly shrinking and its shape is irregular."),
-        namedMoon("火卫二", "Deimos", "更小且轨道更远，表面覆盖细碎风化物。", "The smaller, more distant Martian moon, with a surface covered by fine regolith.")
+        namedMoon("火卫一（福波斯）", "Phobos", "距离火星更近，轨道正在缓慢降低，外形不规则，未来可能碎裂成环或坠入火星。", "The closer Martian moon; its orbit is slowly shrinking and it may eventually break into a ring or fall into Mars.", majorMoons),
+        namedMoon("火卫二（得摩斯）", "Deimos", "更小且轨道更远，表面覆盖细碎风化物，可能是早期碎片或捕获小天体演化而来。", "The smaller, more distant Martian moon, with fine regolith and an origin that may involve debris or capture.", majorMoons)
       ]
     },
     axialTiltDeg: 25.19,
@@ -171,15 +206,20 @@ export const bodies: CelestialBody[] = [
     rotationPeriodHours: 9.93,
     surfaceGravityMs2: 24.79,
     temperatureRangeC: { minC: -145, maxC: -108 },
+    atmosphere: {
+      zh: "木星大气主要由氢和氦组成，含甲烷、氨、水汽和硫化物等微量成分。可见云带、急流和大红斑反映了不同高度云层、强对流和快速自转共同驱动的天气系统。",
+      en: "Jupiter's atmosphere is mostly hydrogen and helium, with trace methane, ammonia, water vapor, and sulfur compounds. Its bands, jets, and Great Red Spot reveal weather driven by layered clouds, convection, and rapid rotation."
+    },
     moons: {
-      count: 101,
+      count: 115,
       names: [
-        namedMoon("木卫一", "Io", "太阳系火山活动最强的天体之一，受木星潮汐加热。", "One of the most volcanically active worlds, heated by Jupiter's tides."),
-        namedMoon("木卫二", "Europa", "冰壳下可能存在全球性地下海洋，是宜居环境研究重点。", "Likely hides a global ocean beneath ice, making it a major habitability target."),
-        namedMoon("木卫三", "Ganymede", "太阳系最大的卫星，甚至大于水星，并拥有自身磁场。", "The largest moon in the Solar System, larger than Mercury, with its own magnetic field."),
-        namedMoon("木卫四", "Callisto", "古老且布满撞击坑，记录了早期太阳系撞击历史。", "An ancient, heavily cratered moon preserving early impact history.")
-      ],
-      note: { zh: "列出伽利略四大卫星；其余为已确认小卫星。", en: "Lists the four Galilean moons; the rest are confirmed smaller moons." }
+        namedMoon("木卫一（伊奥）", "Io", "太阳系火山活动最强的天体之一，受木星潮汐加热，表面不断被硫和熔岩重塑。", "One of the most volcanically active worlds, reshaped by sulfur and lava under Jupiter's tidal heating.", regularMoons),
+        namedMoon("木卫二（欧罗巴）", "Europa", "冰壳下可能存在全球性地下海洋，是研究潜在宜居环境的重点目标。", "Likely hides a global ocean beneath ice, making it a major habitability target.", regularMoons),
+        namedMoon("木卫三（盖尼米得）", "Ganymede", "太阳系最大的卫星，直径大于水星，并拥有自身磁场和可能的地下海洋。", "The largest moon in the Solar System, larger than Mercury, with its own magnetic field and possible ocean.", regularMoons),
+        namedMoon("木卫四（卡利斯托）", "Callisto", "古老且布满撞击坑，可能拥有地下海洋，保存了早期太阳系撞击历史。", "An ancient, heavily cratered moon that may hold an ocean and preserves early impact history.", regularMoons),
+        namedMoon("木卫六（希玛利亚）", "Himalia", "最大的顺行不规则卫星，代表远离木星、轨道倾斜且可能源自捕获碎片的卫星族。", "The largest prograde irregular moon, representing distant inclined captured-fragment families.", progradeIrregularMoons),
+        namedMoon("木卫八（帕西法厄）", "Pasiphae", "大型逆行不规则卫星之一，所属族群轨道高倾斜、高偏心，可能来自捕获天体碎裂。", "A major retrograde irregular moon in a high-inclination, eccentric family likely born from captured-body breakup.", retrogradeIrregularMoons)
+      ]
     },
     axialTiltDeg: 3.13,
     orbit: { semiMajorAxisAu: 5.2, displayDistance: 30, displayRadius: 1.55, orbitalPeriodDays: 4332.6, phaseDeg: 15, inclinationDeg: 1.3, color: "#d1a16e", showLabelByDefault: true },
@@ -205,16 +245,20 @@ export const bodies: CelestialBody[] = [
     rotationPeriodHours: 10.7,
     surfaceGravityMs2: 10.44,
     temperatureRangeC: { minC: -185, maxC: -122 },
+    atmosphere: {
+      zh: "土星大气以氢和氦为主，含甲烷、氨和水冰云等成分。快速自转让云带、喷流和极区六边形结构格外明显，深层风暴可持续扰动整个大气系统。",
+      en: "Saturn's atmosphere is dominated by hydrogen and helium with methane, ammonia, and water-ice clouds. Rapid rotation drives bands, jets, and the polar hexagon, while deep storms can disturb the whole atmosphere."
+    },
     moons: {
-      count: 274,
+      count: 292,
       names: [
-        namedMoon("土卫六", "Titan", "拥有浓厚大气，表面存在液态烃湖和复杂有机化学。", "Has a thick atmosphere, liquid hydrocarbon lakes, and complex organic chemistry."),
-        namedMoon("土卫二", "Enceladus", "从南极喷出含水羽流，指向冰壳下的地下海洋。", "Ejects water-rich plumes from its south pole, pointing to an ocean below the ice."),
-        namedMoon("土卫一", "Mimas", "以巨大的赫歇尔撞击坑闻名，外观像被重击过的冰质卫星。", "Known for the huge Herschel crater on this heavily battered icy moon."),
-        namedMoon("土卫五", "Rhea", "土星第二大卫星，表面布满撞击坑和明亮冰质地形。", "Saturn's second-largest moon, with cratered and bright icy terrain."),
-        namedMoon("土卫八", "Iapetus", "具有强烈明暗半球差异和突出的赤道山脊。", "Shows a stark bright-dark hemispheric contrast and a prominent equatorial ridge.")
-      ],
-      note: { zh: "列出代表性卫星；土星还有大量已确认小卫星。", en: "Lists representative moons; Saturn also has many confirmed smaller moons." }
+        namedMoon("土卫六（泰坦）", "Titan", "拥有浓厚大气，表面存在液态烃湖和复杂有机化学，是外太阳系最像行星的卫星之一。", "Has a thick atmosphere, liquid hydrocarbon lakes, and complex organic chemistry.", regularMoons),
+        namedMoon("土卫二（恩克拉多斯）", "Enceladus", "从南极喷出含水羽流，指向冰壳下的地下海洋，是宜居环境研究重点。", "Ejects water-rich plumes from its south pole, pointing to an ocean below the ice.", regularMoons),
+        namedMoon("土卫一（弥玛斯）", "Mimas", "以巨大的赫歇尔撞击坑闻名，展示小型冰质卫星被强烈撞击后的形态。", "Known for the huge Herschel crater on this heavily battered icy moon.", regularMoons),
+        namedMoon("土卫五（瑞亚）", "Rhea", "土星第二大卫星，表面布满撞击坑和明亮冰质地形。", "Saturn's second-largest moon, with cratered and bright icy terrain.", regularMoons),
+        namedMoon("土卫八（伊阿珀托斯）", "Iapetus", "具有强烈明暗半球差异和突出的赤道山脊，轨道远离主要内侧卫星群。", "Shows a stark bright-dark hemispheric contrast and a prominent equatorial ridge.", regularMoons),
+        namedMoon("土卫九（菲比）", "Phoebe", "大型不规则卫星，沿逆行轨道运行，可能是被土星捕获的外太阳系小天体。", "A large irregular moon on a retrograde orbit, likely captured from the outer Solar System.", irregularMoons)
+      ]
     },
     axialTiltDeg: 26.73,
     orbit: { semiMajorAxisAu: 9.58, displayDistance: 40, displayRadius: 1.32, orbitalPeriodDays: 10759, phaseDeg: 80, inclinationDeg: 2.49, color: "#e0c180", showLabelByDefault: true },
@@ -240,14 +284,20 @@ export const bodies: CelestialBody[] = [
     rotationPeriodHours: -17.2,
     surfaceGravityMs2: 8.69,
     temperatureRangeC: { minC: -224, maxC: -197 },
+    atmosphere: {
+      zh: "天王星大气主要由氢、氦和甲烷组成，甲烷吸收红光，使行星呈现蓝绿色。它内部热流很弱，但仍有云、风暴和随极端季节变化的环流。",
+      en: "Uranus' atmosphere is mostly hydrogen, helium, and methane. Methane absorbs red light, giving the planet its blue-green color. Despite weak internal heat, clouds, storms, and seasonal circulation occur."
+    },
     moons: {
-      count: 28,
+      count: 29,
       names: [
-        namedMoon("米兰达", "Miranda", "地貌破碎复杂，可能经历过强烈构造活动。", "Has fractured, complex terrain that may record intense geologic activity."),
-        namedMoon("艾瑞尔", "Ariel", "表面较明亮，峡谷和断裂显示曾有地质更新。", "A relatively bright moon with canyons and fractures suggesting resurfacing."),
-        namedMoon("乌姆柏里厄尔", "Umbriel", "较暗且撞击坑丰富，可能保存更古老表面。", "A darker, heavily cratered moon that may preserve an older surface."),
-        namedMoon("泰坦尼亚", "Titania", "天王星最大卫星，拥有峡谷和断层系统。", "Uranus' largest moon, marked by canyons and fault systems."),
-        namedMoon("奥伯龙", "Oberon", "外侧大卫星，表面有大量古老撞击坑。", "An outer major moon with many ancient impact craters.")
+        namedMoon("天卫一（艾瑞尔）", "Ariel", "表面较明亮，峡谷和断裂显示曾有地质更新，是天王星主群卫星中最活跃的候选之一。", "A relatively bright moon with canyons and fractures suggesting resurfacing.", uranusMainMoons),
+        namedMoon("天卫二（乌姆柏里厄尔）", "Umbriel", "较暗且撞击坑丰富，可能保存更古老表面。", "A darker, heavily cratered moon that may preserve an older surface.", uranusMainMoons),
+        namedMoon("天卫三（泰坦尼亚）", "Titania", "天王星最大卫星，拥有峡谷和断层系统，可能记录内部演化和潮汐历史。", "Uranus' largest moon, marked by canyons and fault systems.", uranusMainMoons),
+        namedMoon("天卫四（奥伯龙）", "Oberon", "外侧大卫星，表面有大量古老撞击坑。", "An outer major moon with many ancient impact craters.", uranusMainMoons),
+        namedMoon("天卫五（米兰达）", "Miranda", "地貌破碎复杂，可能经历过强烈构造活动或重组历史。", "Has fractured, complex terrain that may record intense geologic activity.", uranusMainMoons),
+        namedMoon("天卫六（科迪莉亚）", "Cordelia", "内卫星之一，靠近天王星环系统，可能参与维持环的边界结构。", "An inner moon close to Uranus' rings, likely involved in shaping ring edges.", uranusInnerMoons),
+        namedMoon("天卫十七（西科拉克斯）", "Sycorax", "较大的不规则卫星，轨道遥远且倾斜，可能是捕获天体或碎片族成员。", "A larger irregular moon on a distant inclined orbit, likely captured or part of a fragment family.", irregularMoons)
       ]
     },
     axialTiltDeg: 97.77,
@@ -274,14 +324,18 @@ export const bodies: CelestialBody[] = [
     rotationPeriodHours: 16.1,
     surfaceGravityMs2: 11.15,
     temperatureRangeC: { minC: -218, maxC: -200 },
+    atmosphere: {
+      zh: "海王星大气主要由氢、氦和甲烷组成，甲烷贡献蓝色，但深蓝色还与高空雾霾和未知吸收物有关。内部热量驱动高速风和会生成、漂移、消散的大型风暴。",
+      en: "Neptune's atmosphere is mostly hydrogen, helium, and methane. Methane contributes to the blue color, while haze and unknown absorbers deepen it. Internal heat drives fast winds and large storms."
+    },
     moons: {
       count: 16,
       names: [
-        namedMoon("海卫一", "Triton", "沿逆行轨道运行，可能是被捕获的柯伊伯带天体。", "Moves in a retrograde orbit and may be a captured Kuiper Belt object."),
-        namedMoon("普罗透斯", "Proteus", "海王星较大的内侧卫星，形状不规则。", "A larger inner moon of Neptune with an irregular shape."),
-        namedMoon("涅瑞伊得", "Nereid", "轨道偏心率很高，是海王星系统动力学线索。", "Has a highly eccentric orbit, offering clues to Neptune-system dynamics."),
-        namedMoon("拉里萨", "Larissa", "靠近海王星的内侧不规则卫星。", "An irregular inner moon orbiting close to Neptune."),
-        namedMoon("海马", "Hippocamp", "体积很小，可能与更大卫星碎片历史有关。", "A tiny moon that may relate to fragment history from larger moons.")
+        namedMoon("海卫三（奈阿德）", "Naiad", "内侧规则卫星，轨道接近海王星环区，反映环与小卫星之间的动力耦合。", "An inner regular moon near Neptune's rings, reflecting ring-moon dynamical coupling.", regularMoons),
+        namedMoon("海卫七（拉里萨）", "Larissa", "较大的规则内卫星，靠近海王星运行，可能与环物质交换有关。", "A larger regular inner moon close to Neptune, likely tied to ring material exchange.", regularMoons),
+        namedMoon("海卫八（普罗透斯）", "Proteus", "海王星最大的规则卫星，形状不规则，是海卫一之外最重要的大卫星之一。", "Neptune's largest regular moon and one of its most important large moons after Triton.", regularMoons),
+        namedMoon("海卫一（特里同）", "Triton", "沿逆行轨道运行，可能是被捕获的柯伊伯带天体，拥有氮冰、稀薄大气和可能的喷泉活动。", "Moves in a retrograde orbit and may be a captured Kuiper Belt object, with nitrogen ice, a thin atmosphere, and possible geysers.", irregularMoons),
+        namedMoon("海卫二（涅瑞伊得）", "Nereid", "轨道偏心率很高，是理解海卫一捕获前后海王星系统演化的重要线索。", "Has a highly eccentric orbit and is important for understanding Neptune-system evolution around Triton's capture.", irregularMoons)
       ]
     },
     axialTiltDeg: 28.32,

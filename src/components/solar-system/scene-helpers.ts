@@ -5,7 +5,7 @@ const BODY_COLORS: Record<string, string> = {
   sun: "#f8c45c",
   mercury: "#9ca3af",
   venus: "#d6b36a",
-  earth: "#4fb3d8",
+  earth: "#0f8fd6",
   moon: "#cbd5e1",
   mars: "#c66b4e",
   jupiter: "#d1a16e",

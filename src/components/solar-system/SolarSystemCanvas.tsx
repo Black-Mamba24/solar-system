@@ -94,7 +94,7 @@ export function SolarSystemCanvas({ locale, elapsedDays, cameraPreset, selectedB
           ref={controlsRef}
           enableDamping
           dampingFactor={0.08}
-          minDistance={8}
+          minDistance={18}
           maxDistance={120}
           target={initialCameraView.target}
           zoomToCursor
@@ -103,6 +103,11 @@ export function SolarSystemCanvas({ locale, elapsedDays, cameraPreset, selectedB
       <p className="absolute bottom-3 left-3 rounded-ui bg-black/60 px-3 py-2 text-xs text-slate-200">
         {dictionaries[locale].compressedScale}
       </p>
+      <div className="absolute bottom-3 right-3 rounded-ui bg-black/60 px-3 py-2 text-xs text-slate-200">
+        <p className="mb-1 text-[0.68rem] uppercase tracking-[0.14em] text-slate-400">{locale === "zh" ? "缩放比例尺" : "Zoom scale"}</p>
+        <div className="h-1 w-24 rounded-full bg-white/80" />
+        <p className="mt-1 text-right text-white">10 AU</p>
+      </div>
     </section>
   );
 }

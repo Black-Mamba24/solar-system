@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { bodies } from "@/data/bodies";
 import { CelestialBodyMesh } from "./CelestialBodyMesh";
 import { getCameraPresetView, SolarSystemCanvas } from "./SolarSystemCanvas";
-import { getOrbitCenter, getSceneBodyPosition } from "./scene-helpers";
+import { getBodyFallbackColor, getOrbitCenter, getSceneBodyPosition } from "./scene-helpers";
 
 const dreiMocks = vi.hoisted(() => ({
   orbitControlsProps: [] as Array<Record<string, unknown>>,
@@ -57,6 +57,8 @@ describe("SolarSystemCanvas", () => {
 
     expect(screen.getByTestId("canvas")).toBeInTheDocument();
     expect(screen.getByText("比例经过教学压缩")).toBeInTheDocument();
+    expect(screen.getByText("缩放比例尺")).toBeInTheDocument();
+    expect(screen.getByText("10 AU")).toBeInTheDocument();
   });
 
   it("includes the main asteroid belt in the full scene", () => {
@@ -131,6 +133,7 @@ describe("SolarSystemCanvas", () => {
     );
 
     expect(screen.getByText("Earth").parentElement).toHaveAttribute("data-html-position", `0,${-(earth.orbit!.displayRadius + 0.52)},0`);
+    expect(screen.getByText("Earth")).toHaveClass("whitespace-nowrap");
   });
 
   it("provides a single full overview camera", () => {
@@ -149,6 +152,10 @@ describe("SolarSystemCanvas", () => {
       />
     );
 
-    expect(dreiMocks.orbitControlsProps.at(-1)).toMatchObject({ zoomToCursor: true });
+    expect(dreiMocks.orbitControlsProps.at(-1)).toMatchObject({ zoomToCursor: true, minDistance: 18 });
+  });
+
+  it("uses an ocean-blue fallback color for Earth", () => {
+    expect(getBodyFallbackColor(bodies.find((body) => body.id === "earth")!)).toBe("#0f8fd6");
   });
 });
