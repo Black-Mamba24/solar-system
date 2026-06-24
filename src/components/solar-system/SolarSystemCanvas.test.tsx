@@ -3,7 +3,7 @@ import { render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { bodies } from "@/data/bodies";
 import { CelestialBodyMesh } from "./CelestialBodyMesh";
-import { getCameraPresetView, SolarSystemCanvas } from "./SolarSystemCanvas";
+import { formatZoomScaleAu, getCameraPresetView, SolarSystemCanvas } from "./SolarSystemCanvas";
 import { getBodyFallbackColor, getOrbitCenter, getSceneBodyPosition } from "./scene-helpers";
 
 const dreiMocks = vi.hoisted(() => ({
@@ -60,7 +60,7 @@ describe("SolarSystemCanvas", () => {
     expect(screen.getByText("缩放比例尺")).toBeInTheDocument();
     expect(screen.getByText("10 AU")).toBeInTheDocument();
     expect(screen.getByLabelText("当前缩放位置")).toBeInTheDocument();
-    expect(screen.getByText("10.0 AU")).toBeInTheDocument();
+    expect(screen.getByText("10.00 AU")).toBeInTheDocument();
   });
 
   it("includes the main asteroid belt in the full scene", () => {
@@ -140,6 +140,12 @@ describe("SolarSystemCanvas", () => {
 
   it("provides a single full overview camera", () => {
     expect(getCameraPresetView("full")).toEqual({ position: [0, 74, 92], target: [0, 0, 0] });
+  });
+
+  it("formats the zoom scale with a 0.05 AU minimum", () => {
+    expect(formatZoomScaleAu(0)).toBe("0.05 AU");
+    expect(formatZoomScaleAu(0.004)).toBe("0.05 AU");
+    expect(formatZoomScaleAu(1)).toBe("10.00 AU");
   });
 
   it("zooms toward the pointer instead of the fixed solar center", () => {
