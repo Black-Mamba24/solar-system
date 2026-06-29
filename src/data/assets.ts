@@ -14,6 +14,18 @@ export const assetSources: AssetSource[] = [
     processing: "Representative official solar photograph, not a true equirectangular global texture; resized to 1024px wide and saved as JPEG for local web use."
   },
   {
+    id: "sun-surface-sdo",
+    bodyId: "sun",
+    purpose: "surface",
+    title: "SDO AIA 304 Full-Disk Solar Surface Texture",
+    url: "https://svs.gsfc.nasa.gov/10610/",
+    agency: "NASA / AIA / Goddard Space Flight Center",
+    usage: "NASA imagery generally available for educational and informational use with acknowledgement; do not imply endorsement.",
+    downloadedAt: "2026-06-27",
+    localPath: "/textures/sun-surface.jpg",
+    processing: "Derived from NASA SDO/AIA 304 full-disk imagery on NASA SVS item 10610; resampled into a 2048x1024 equirectangular-style solar surface texture for 3D sphere mapping."
+  },
+  {
     id: "mercury-nasa",
     bodyId: "mercury",
     purpose: "diffuse",
@@ -23,7 +35,19 @@ export const assetSources: AssetSource[] = [
     usage: "NASA imagery generally available for educational and informational use with acknowledgement; do not imply endorsement.",
     downloadedAt: "2026-06-18",
     localPath: "/textures/mercury.jpg",
-    processing: "Representative official spacecraft photograph, not a true equirectangular global texture; resized to 1024px wide and saved as JPEG for local web use."
+    processing: "Representative official spacecraft full-disc image for the information panel; downloaded as 1536x512 JPEG."
+  },
+  {
+    id: "mercury-surface-scope",
+    bodyId: "mercury",
+    purpose: "surface",
+    title: "Mercury 2K Global Texture",
+    url: "https://www.solarsystemscope.com/textures/download/2k_mercury.jpg",
+    agency: "Solar System Scope, derived from NASA / MESSENGER imagery",
+    usage: "Solar System Scope texture used with source acknowledgement; no NASA or source-institution endorsement is implied.",
+    downloadedAt: "2026-06-26",
+    localPath: "/textures/mercury-surface.jpg",
+    processing: "Equirectangular global surface texture based on spacecraft imagery; downloaded as 2048x1024 JPEG for direct 3D sphere mapping."
   },
   {
     id: "venus-nasa",
@@ -35,7 +59,31 @@ export const assetSources: AssetSource[] = [
     usage: "NASA imagery generally available for educational and informational use with acknowledgement; do not imply endorsement.",
     downloadedAt: "2026-06-18",
     localPath: "/textures/venus.jpg",
-    processing: "Representative official spacecraft photograph, not a true equirectangular global texture; resized to 1024px wide and saved as JPEG for local web use."
+    processing: "Representative official spacecraft full-disc image for the information panel; downloaded as 1536x512 JPEG."
+  },
+  {
+    id: "venus-surface-scope",
+    bodyId: "venus",
+    purpose: "surface",
+    title: "Venus Surface 2K Global Texture",
+    url: "https://www.solarsystemscope.com/textures/download/2k_venus_surface.jpg",
+    agency: "Solar System Scope, derived from NASA / Magellan radar imagery",
+    usage: "Solar System Scope texture used with source acknowledgement; no NASA or source-institution endorsement is implied.",
+    downloadedAt: "2026-06-26",
+    localPath: "/textures/venus-surface.jpg",
+    processing: "Equirectangular global Venus surface texture based on radar observations; downloaded as 2048x1024 JPEG for direct 3D sphere mapping and bump detail."
+  },
+  {
+    id: "venus-clouds-scope",
+    bodyId: "venus",
+    purpose: "clouds",
+    title: "Venus Atmosphere 2K Global Texture",
+    url: "https://www.solarsystemscope.com/textures/download/2k_venus_atmosphere.jpg",
+    agency: "Solar System Scope, derived from NASA Venus imagery",
+    usage: "Solar System Scope texture used with source acknowledgement; no NASA or source-institution endorsement is implied.",
+    downloadedAt: "2026-06-26",
+    localPath: "/textures/venus-clouds.jpg",
+    processing: "Equirectangular Venus cloud texture downloaded as 2048x1024 JPEG and rendered as a translucent atmospheric shell."
   },
   {
     id: "earth-nasa",
@@ -50,6 +98,30 @@ export const assetSources: AssetSource[] = [
     processing: "Representative official Earth photograph, not a true equirectangular global texture; converted from source WebP to JPEG, resized to 1024px wide, and saved for local web use."
   },
   {
+    id: "earth-blue-marble-surface-svs",
+    bodyId: "earth",
+    purpose: "surface",
+    title: "Blue Marble Next Generation Equirectangular Earth Surface",
+    url: "https://svs.gsfc.nasa.gov/vis/a000000/a003600/a003615/earth_noClouds.0330.jpg",
+    agency: "NASA / Goddard Space Flight Center Scientific Visualization Studio",
+    usage: "NASA imagery generally available for educational and informational use with acknowledgement; do not imply endorsement.",
+    downloadedAt: "2026-06-28",
+    localPath: "/textures/earth-surface.jpg",
+    processing: "Equirectangular Blue Marble Next Generation cloud-free global Earth surface texture downloaded as a 2048x1024 JPEG for direct 3D sphere mapping and subtle bump detail."
+  },
+  {
+    id: "earth-blue-marble-clouds-svs",
+    bodyId: "earth",
+    purpose: "clouds",
+    title: "Blue Marble Equirectangular Earth Cloud Layer",
+    url: "https://svs.gsfc.nasa.gov/vis/a000000/a003600/a003615/flat_earth03.jpg",
+    agency: "NASA / Goddard Space Flight Center Scientific Visualization Studio",
+    usage: "NASA imagery generally available for educational and informational use with acknowledgement; do not imply endorsement.",
+    downloadedAt: "2026-06-28",
+    localPath: "/textures/earth-clouds.png",
+    processing: "Transparent 2048x1024 PNG cloud layer extracted from NASA SVS clouded and cloud-free Blue Marble equirectangular maps, with polar opacity softened and East Asia/China cloud alpha reduced for a separate 3D cloud shell."
+  },
+  {
     id: "moon-nasa",
     bodyId: "moon",
     purpose: "diffuse",
@@ -60,6 +132,18 @@ export const assetSources: AssetSource[] = [
     downloadedAt: "2026-06-18",
     localPath: "/textures/moon.jpg",
     processing: "Representative official Moon photograph, not a true equirectangular global texture; resized to 1024px wide and saved as JPEG for local web use."
+  },
+  {
+    id: "moon-surface-scope",
+    bodyId: "moon",
+    purpose: "surface",
+    title: "Moon 8K Global Texture",
+    url: "https://commons.wikimedia.org/wiki/File:Solarsystemscope_texture_8k_moon.jpg",
+    agency: "Solar System Scope, based on NASA / LRO and lunar imagery",
+    usage: "Creative Commons Attribution 4.0 texture used with source acknowledgement; no NASA or source-institution endorsement is implied.",
+    downloadedAt: "2026-06-28",
+    localPath: "/textures/moon-surface.jpg",
+    processing: "Equirectangular global lunar surface texture downloaded from Wikimedia Commons as an 8192x4096 JPEG for direct 3D sphere mapping and bump detail."
   },
   {
     id: "mars-nasa",
@@ -74,6 +158,18 @@ export const assetSources: AssetSource[] = [
     processing: "Representative official spacecraft-derived Mars image, not a true equirectangular global texture; resized to 1024px wide and saved as JPEG for local web use."
   },
   {
+    id: "mars-surface-scope",
+    bodyId: "mars",
+    purpose: "surface",
+    title: "Mars 8K Global Texture",
+    url: "https://commons.wikimedia.org/wiki/File:Solarsystemscope_texture_8k_mars.jpg",
+    agency: "Solar System Scope, based on NASA Mars imagery",
+    usage: "Creative Commons Attribution 4.0 texture used with source acknowledgement; no NASA or source-institution endorsement is implied.",
+    downloadedAt: "2026-06-27",
+    localPath: "/textures/mars-surface.jpg",
+    processing: "Equirectangular global Mars surface texture downloaded from Wikimedia Commons as a 3840x1920 JPEG for direct 3D sphere mapping and bump detail."
+  },
+  {
     id: "jupiter-nasa",
     bodyId: "jupiter",
     purpose: "diffuse",
@@ -84,6 +180,18 @@ export const assetSources: AssetSource[] = [
     downloadedAt: "2026-06-18",
     localPath: "/textures/jupiter.jpg",
     processing: "Representative official Juno spacecraft image, not a true equirectangular global texture; resized to 1024px wide and saved as JPEG for local web use."
+  },
+  {
+    id: "jupiter-surface-scope",
+    bodyId: "jupiter",
+    purpose: "surface",
+    title: "Jupiter 8K Global Texture",
+    url: "https://commons.wikimedia.org/wiki/File:Solarsystemscope_texture_8k_jupiter.jpg",
+    agency: "Solar System Scope, based on NASA / Juno and spacecraft imagery",
+    usage: "Creative Commons Attribution 4.0 texture used with source acknowledgement; no NASA or source-institution endorsement is implied.",
+    downloadedAt: "2026-06-27",
+    localPath: "/textures/jupiter-surface.jpg",
+    processing: "Equirectangular global Jupiter atmosphere texture downloaded from Wikimedia Commons as a 3840x1920 JPEG for direct 3D sphere mapping and bump detail."
   },
   {
     id: "saturn-nasa",
@@ -98,6 +206,30 @@ export const assetSources: AssetSource[] = [
     processing: "Representative official Cassini photograph with rings, not a true equirectangular global texture; resized to 1024px wide and saved as JPEG for local web use."
   },
   {
+    id: "saturn-surface-scope",
+    bodyId: "saturn",
+    purpose: "surface",
+    title: "Saturn 8K Global Texture",
+    url: "https://commons.wikimedia.org/wiki/File:Solarsystemscope_texture_8k_saturn.jpg",
+    agency: "Solar System Scope, based on NASA / Cassini imagery",
+    usage: "Creative Commons Attribution 4.0 texture used with source acknowledgement; no NASA or source-institution endorsement is implied.",
+    downloadedAt: "2026-06-27",
+    localPath: "/textures/saturn-surface.jpg",
+    processing: "Equirectangular global Saturn atmosphere texture downloaded from Wikimedia Commons as a 3840x1920 JPEG for direct 3D sphere mapping and bump detail."
+  },
+  {
+    id: "saturn-rings-scope",
+    bodyId: "saturn",
+    purpose: "ring",
+    title: "Saturn Ring Alpha Texture",
+    url: "https://commons.wikimedia.org/wiki/File:Solarsystemscope_texture_2k_saturn_ring_alpha.png",
+    agency: "Solar System Scope, based on NASA / Cassini imagery",
+    usage: "Creative Commons Attribution 4.0 texture used with source acknowledgement; no NASA or source-institution endorsement is implied.",
+    downloadedAt: "2026-06-27",
+    localPath: "/textures/saturn-rings.png",
+    processing: "RGBA Saturn ring texture downloaded from Wikimedia Commons as a 2048x125 PNG and mapped onto an ultra-thin ring plane with supplemental ice-particle points."
+  },
+  {
     id: "uranus-nasa",
     bodyId: "uranus",
     purpose: "diffuse",
@@ -110,6 +242,18 @@ export const assetSources: AssetSource[] = [
     processing: "Representative official Uranus photograph, not a true equirectangular global texture; converted from source WebP to JPEG, resized to 1024px wide, and saved for local web use."
   },
   {
+    id: "uranus-surface-scope",
+    bodyId: "uranus",
+    purpose: "surface",
+    title: "Uranus 2K Global Texture",
+    url: "https://commons.wikimedia.org/wiki/File:Solarsystemscope_texture_2k_uranus.jpg",
+    agency: "Solar System Scope, based on NASA / Voyager and planetary imagery",
+    usage: "Creative Commons Attribution 4.0 texture used with source acknowledgement; no NASA or source-institution endorsement is implied.",
+    downloadedAt: "2026-06-28",
+    localPath: "/textures/uranus-surface.jpg",
+    processing: "Equirectangular global Uranus atmosphere texture downloaded from Wikimedia Commons as a 2048x1024 JPEG for direct 3D sphere mapping; supplemental methane haze and dark dust rings are rendered as separate transparent layers."
+  },
+  {
     id: "neptune-nasa",
     bodyId: "neptune",
     purpose: "diffuse",
@@ -120,5 +264,17 @@ export const assetSources: AssetSource[] = [
     downloadedAt: "2026-06-18",
     localPath: "/textures/neptune.jpg",
     processing: "Representative official Voyager 2 photograph, not a true equirectangular global texture; converted from source WebP to JPEG, resized to 1024px wide, and saved for local web use."
+  },
+  {
+    id: "neptune-surface-scope",
+    bodyId: "neptune",
+    purpose: "surface",
+    title: "Neptune 2K Global Texture",
+    url: "https://commons.wikimedia.org/wiki/File:Solarsystemscope_texture_2k_neptune.jpg",
+    agency: "Solar System Scope, based on NASA / Voyager and planetary imagery",
+    usage: "Creative Commons Attribution 4.0 texture used with source acknowledgement; no NASA or source-institution endorsement is implied.",
+    downloadedAt: "2026-06-28",
+    localPath: "/textures/neptune-surface.jpg",
+    processing: "Equirectangular global Neptune atmosphere texture downloaded from Wikimedia Commons as a 2048x1024 JPEG for direct 3D sphere mapping; supplemental Great Dark Spot, methane cirrus and faint ring layers are rendered separately."
   }
 ];

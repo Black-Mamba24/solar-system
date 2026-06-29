@@ -1,7 +1,8 @@
 import React from "react";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { isWebGLAvailable, OverviewPage } from "./OverviewPage";
+import { isWebGLAvailable } from "@/lib/webgl";
+import { OverviewPage } from "./OverviewPage";
 
 const navigationMocks = vi.hoisted(() => ({
   replace: vi.fn(),
@@ -42,6 +43,9 @@ describe("OverviewPage", () => {
     render(<OverviewPage locale="zh" />);
 
     expect(screen.getByText("太阳系概述")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "返回首页" })).toHaveAttribute("href", "/?lang=zh");
+    expect(screen.getByRole("navigation", { name: "页面操作" })).toContainElement(screen.getByRole("link", { name: "返回首页" }));
+    expect(screen.getByRole("navigation", { name: "页面操作" })).toContainElement(screen.getByRole("button", { name: "切换语言" }));
     expect(screen.getByRole("button", { name: "播放" })).toBeInTheDocument();
     expect(screen.getByRole("combobox", { name: "速度" })).toBeInTheDocument();
     expect(screen.getByLabelText("标签")).toBeChecked();
@@ -62,6 +66,7 @@ describe("OverviewPage", () => {
 
     render(<OverviewPage locale="en" />);
 
+    expect(screen.getByRole("link", { name: "Back to home" })).toHaveAttribute("href", "/?lang=en");
     expect(screen.getByRole("heading", { name: "Mars" })).toBeInTheDocument();
     expect(screen.getByText("mock camera full")).toBeInTheDocument();
     expect(screen.getByLabelText("Labels")).not.toBeChecked();

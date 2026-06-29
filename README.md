@@ -6,12 +6,12 @@
 
 - 沉浸式首页和 `/overview` 太阳系概述页面。
 - 基于 Three.js / React Three Fiber 的 3D 太阳、八大行星和月球展示。
-- 近似轨道运动、时间控制、相机预设和图层开关。
+- 近似轨道运动、时间控制、相机预设、0.1 AU 步进比例尺按钮和图层开关。
 - 天体百科面板，覆盖基础事实、意义说明和本地化内容。
 - 中文 / English 切换，通过 `?lang=zh` 和 `?lang=en` 保持 URL 可分享。
-- 真实公开影像来源记录，并在 `public/textures/` 暂存本地素材文件。
-
-当前 3D 场景已经在网格 `userData` 中保留贴图来源路径，但运行时仍使用 fallback / programmatic materials 渲染天体颜色；真实图片贴图映射会在后续任务中接入。
+- 真实公开影像来源记录；3D 场景使用平滑程序化几何、顶点色和多层材质建立天体模型，不使用图片贴图模拟球体表面。
+- 地球陆地使用内置简化矢量大陆轮廓，不使用椭圆块或图片贴图；距离和尺寸则保持教学压缩比例。
+- 行星轴倾角和轨道倾角使用数据层中的真实近似值，并在 3D 场景中显示自转轴。
 
 第一版不实现日食、月食、水星逆行、小行星带、木星卫星五个专题页面；这些入口在首页保留为 coming soon。
 
@@ -40,7 +40,7 @@ npm run test -- src/data/data-integrity.test.ts
 
 ## 素材与授权
 
-太阳、行星和月球视觉素材来自 NASA 官方页面或 NASA Images 服务，来源记录见 `docs/assets.md` 和 `src/data/assets.ts`。这些文件目前作为可追溯的公开素材资产随项目暂存，供后续 texture mapping 使用；当前运行时场景尚未加载这些图片作为球体贴图。当前素材以代表性官方影像为主，并非全部都是严格的 equirectangular global texture；具体处理方式逐项记录在素材表中。
+太阳、行星和月球视觉素材来自 NASA 官方页面或 NASA Images 服务，来源记录见 `docs/assets.md` 和 `src/data/assets.ts`。当前素材以代表性官方影像为主，并非全部都是严格的 equirectangular global texture；因此这些图片仅用于信息面板和来源追溯，不作为 3D 球体表面贴图。3D 场景使用平滑程序化几何、顶点色、矢量大陆轮廓、云层、环、风暴和大气壳建立天体模型，并在网格 `userData` 中保留真实素材来源路径。具体处理方式逐项记录在素材表中。
 
 NASA、JPL、USGS 等机构名称只用于来源署名。本项目不暗示这些机构对项目、网站内容、代码或展示效果背书。复用、分发或再发布素材前，应再次核对对应来源页面和 NASA Images and Media Guidelines。
 

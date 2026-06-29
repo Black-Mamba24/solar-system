@@ -1,8 +1,10 @@
 import { Html } from "@react-three/drei";
-import React from "react";
+import React, { useMemo } from "react";
 import * as THREE from "three";
 import { assetSources } from "@/data/assets";
-import type { CelestialBody, Locale } from "@/types/domain";
+import { degToRad } from "@/lib/orbits";
+import type { AssetSource, CelestialBody, Locale } from "@/types/domain";
+import { CelestialBodyProceduralModel } from "./procedural-models/CelestialBodyProceduralModel";
 import { getBodyFallbackColor, getSceneBodyPosition } from "./scene-helpers";
 
 interface CelestialBodyMeshProps {
@@ -15,35 +17,34 @@ interface CelestialBodyMeshProps {
   onSelectBody: (bodyId: string) => void;
 }
 
+function getBodyDiffuseAsset(body: CelestialBody): AssetSource | undefined {
+  return assetSources.find((source) => source.bodyId === body.id && source.purpose === "surface") ?? assetSources.find((source) => source.id === body.textureAssetId && source.purpose === "diffuse");
+}
+
+function createRotationAxisGeometry(radius: number): THREE.BufferGeometry {
+  const halfLength = radius * 1.75;
+  return new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, -halfLength, 0), new THREE.Vector3(0, halfLength, 0)]);
+}
+
 export function CelestialBodyMesh({ body, bodies, locale, elapsedDays, showLabel, selected, onSelectBody }: CelestialBodyMeshProps) {
-  const asset = assetSources.find((source) => source.id === body.textureAssetId);
+  const asset = getBodyDiffuseAsset(body);
   const position = getSceneBodyPosition(body, bodies, elapsedDays);
   const radius = body.orbit?.displayRadius ?? 2.2;
-  const isSun = body.id === "sun";
   const fallbackColor = getBodyFallbackColor(body);
+  const axialTilt = degToRad(body.axialTiltDeg ?? 0);
+  const rotationAxisGeometry = useMemo(() => createRotationAxisGeometry(radius), [radius]);
 
   return (
     <group position={position}>
-      <mesh scale={selected ? 1.08 : 1} userData={{ textureSourceId: asset?.id, textureSourcePath: asset?.localPath }} onClick={() => onSelectBody(body.id)}>
-        <sphereGeometry args={[radius, 64, 64]} />
-        {isSun ? (
-          <meshBasicMaterial color={fallbackColor} />
-        ) : (
-          <meshStandardMaterial
-            color={fallbackColor}
-            roughness={0.72}
-            metalness={0.02}
-            emissive={selected ? fallbackColor : "#000000"}
-            emissiveIntensity={selected ? 0.18 : 0}
-          />
-        )}
-      </mesh>
-      {body.id === "saturn" ? (
-        <mesh rotation={[Math.PI / 2.7, 0, 0]}>
-          <ringGeometry args={[radius * 1.35, radius * 2.2, 96]} />
-          <meshStandardMaterial color="#d8c48a" transparent opacity={0.72} side={THREE.DoubleSide} />
-        </mesh>
-      ) : null}
+      <group name={`${body.id}-axial-tilt`} rotation={[0, 0, axialTilt]} userData={{ axialTiltDeg: body.axialTiltDeg ?? 0 }}>
+        <CelestialBodyProceduralModel body={body} radius={radius} selected={selected} fallbackColor={fallbackColor} asset={asset} onSelectBody={onSelectBody} />
+        {body.id !== "sun" ? (
+          <line name={`${body.id}-rotation-axis`}>
+            <primitive object={rotationAxisGeometry} attach="geometry" />
+            <lineBasicMaterial attach="material" color="#e0f7ff" transparent opacity={selected ? 0.95 : 0.56} />
+          </line>
+        ) : null}
+      </group>
       {showLabel ? (
         <Html center distanceFactor={10} position={[0, -(radius + 0.52), 0]}>
           <span className="whitespace-nowrap rounded-ui bg-black/55 px-2 py-1 text-xs text-white">{body.name[locale]}</span>

@@ -1,6 +1,6 @@
 import React from "react";
-import { render, screen, within } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { fireEvent, render, screen, within } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { bodies } from "@/data/bodies";
 import { BodyInfoPanel } from "./BodyInfoPanel";
 
@@ -11,10 +11,120 @@ function bodyById(bodyId: string) {
 }
 
 describe("BodyInfoPanel", () => {
+  const speechSynthesisMock = {
+    speak: vi.fn(),
+    cancel: vi.fn(),
+    getVoices: vi.fn(),
+    resume: vi.fn(),
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn()
+  };
+
+  class MockSpeechSynthesisUtterance {
+    lang = "";
+    pitch = 1;
+    rate = 1;
+    volume = 1;
+    voice: SpeechSynthesisVoice | null = null;
+    onend: (() => void) | null = null;
+    onerror: (() => void) | null = null;
+
+    constructor(public text: string) {}
+  }
+
+  beforeEach(() => {
+    speechSynthesisMock.speak.mockClear();
+    speechSynthesisMock.cancel.mockClear();
+    speechSynthesisMock.resume.mockClear();
+    speechSynthesisMock.getVoices.mockReturnValue([
+      { name: "中文男声", lang: "zh-CN", voiceURI: "zh-male" },
+      { name: "中文女声", lang: "zh-CN", voiceURI: "zh-female" }
+    ]);
+    speechSynthesisMock.addEventListener.mockClear();
+    speechSynthesisMock.removeEventListener.mockClear();
+    Object.defineProperty(window, "speechSynthesis", { configurable: true, value: speechSynthesisMock });
+    Object.defineProperty(window, "SpeechSynthesisUtterance", { configurable: true, value: MockSpeechSynthesisUtterance });
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
   it("shows the selected body's sourced image", () => {
     render(<BodyInfoPanel body={bodyById("earth")} locale="en" />);
 
     expect(screen.getByRole("img", { name: "Earth" }).getAttribute("src")).toContain("%2Ftextures%2Fearth.jpg");
+  });
+
+  it("places the speech button beside the body name and reads the introduction with a male voice", () => {
+    render(<BodyInfoPanel body={bodyById("earth")} locale="zh" />);
+
+    const speechButton = screen.getByRole("button", { name: "播报介绍" });
+    const image = screen.getByRole("img", { name: "地球" });
+
+    expect(speechButton.compareDocumentPosition(image) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+
+    fireEvent.click(speechButton);
+
+    expect(speechSynthesisMock.cancel).toHaveBeenCalled();
+    expect(speechSynthesisMock.speak).toHaveBeenCalledTimes(1);
+    const utterance = speechSynthesisMock.speak.mock.calls[0][0] as SpeechSynthesisUtterance & { text: string };
+    expect(utterance.text).toContain("地球。");
+    expect(utterance.text).toContain(bodyById("earth").content.zh.summary);
+    expect(utterance.lang).toBe("zh-CN");
+    expect(utterance.pitch).toBeLessThan(1);
+    expect(utterance.voice?.name).toBe("中文男声");
+  });
+
+  it("does not mistake female voice identifiers for male voices", () => {
+    speechSynthesisMock.getVoices.mockReturnValue([
+      { name: "Chinese Female", lang: "zh-CN", voiceURI: "zh-female" },
+      { name: "Microsoft Yunxi", lang: "zh-CN", voiceURI: "zh-yunxi" }
+    ]);
+
+    render(<BodyInfoPanel body={bodyById("earth")} locale="zh" />);
+    fireEvent.click(screen.getByRole("button", { name: "播报介绍" }));
+
+    const utterance = speechSynthesisMock.speak.mock.calls[0][0] as SpeechSynthesisUtterance;
+    expect(utterance.voice?.name).toBe("Microsoft Yunxi");
+  });
+
+  it("does not assign a male voice from another locale because mismatched voices can stay silent", () => {
+    speechSynthesisMock.getVoices.mockReturnValue([
+      { name: "Tingting", lang: "zh-CN", voiceURI: "com.apple.voice.compact.zh-CN.Tingting" },
+      { name: "Meijia", lang: "zh-TW", voiceURI: "com.apple.voice.compact.zh-TW.Meijia" },
+      { name: "Daniel", lang: "en-GB", voiceURI: "com.apple.voice.compact.en-GB.Daniel" }
+    ]);
+
+    render(<BodyInfoPanel body={bodyById("earth")} locale="zh" />);
+    fireEvent.click(screen.getByRole("button", { name: "播报介绍" }));
+
+    const utterance = speechSynthesisMock.speak.mock.calls[0][0] as SpeechSynthesisUtterance;
+    expect(utterance.lang).toBe("zh-CN");
+    expect(utterance.voice).toBeNull();
+    expect(utterance.pitch).toBeLessThan(0.8);
+  });
+
+  it("resumes the speech queue before speaking", () => {
+    render(<BodyInfoPanel body={bodyById("earth")} locale="zh" />);
+    fireEvent.click(screen.getByRole("button", { name: "播报介绍" }));
+
+    expect(speechSynthesisMock.resume).toHaveBeenCalledTimes(1);
+    expect(speechSynthesisMock.resume.mock.invocationCallOrder[0]).toBeLessThan(speechSynthesisMock.speak.mock.invocationCallOrder[0]);
+  });
+
+  it("keeps speech playback available when speechSynthesis lacks event listener helpers", () => {
+    const speechSynthesisWithoutEvents = {
+      speak: vi.fn(),
+      cancel: vi.fn(),
+      getVoices: vi.fn().mockReturnValue([{ name: "中文男声", lang: "zh-CN", voiceURI: "zh-male" }])
+    };
+    Object.defineProperty(window, "speechSynthesis", { configurable: true, value: speechSynthesisWithoutEvents });
+
+    render(<BodyInfoPanel body={bodyById("earth")} locale="zh" />);
+    fireEvent.click(screen.getByRole("button", { name: "播报介绍" }));
+
+    expect(speechSynthesisWithoutEvents.speak).toHaveBeenCalledTimes(1);
   });
 
   it("does not compare Moon rotation and orbit periods against Earth", () => {

@@ -1,0 +1,12 @@
+export function isWebGLAvailable(): boolean {
+  if (typeof document === "undefined") {
+    return true;
+  }
+
+  try {
+    const canvas = document.createElement("canvas");
+    return Boolean(canvas.getContext("webgl") || canvas.getContext("webgl2"));
+  } catch {
+    return false;
+  }
+}

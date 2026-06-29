@@ -2,7 +2,8 @@
 
 import { OrbitControls } from "@react-three/drei";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import * as THREE from "three";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import { bodies } from "@/data/bodies";
 import { dictionaries } from "@/i18n/dictionaries";
@@ -33,10 +34,33 @@ const cameraPresetViews: Record<CameraPreset, CameraPresetView> = {
 };
 const minCameraDistance = 11.1;
 const maxCameraDistance = 120;
+const minScaleAu = 0.05;
 const maxScaleAu = 10;
+const zoomScaleStepAu = 0.1;
+const orbitControlsZoomSpeed = 0.5;
+
+export function clampZoomScaleAu(scaleAu: number): number {
+  return Math.max(minScaleAu, Math.min(maxScaleAu, scaleAu));
+}
+
+export function progressToZoomScaleAu(progress: number): number {
+  return clampZoomScaleAu(Math.max(0, Math.min(1, progress)) * maxScaleAu);
+}
+
+export function zoomScaleAuToProgress(scaleAu: number): number {
+  return clampZoomScaleAu(scaleAu) / maxScaleAu;
+}
+
+export function cameraDistanceToZoomProgress(distance: number): number {
+  return Math.max(0, Math.min(1, (distance - minCameraDistance) / (maxCameraDistance - minCameraDistance)));
+}
+
+export function zoomProgressToCameraDistance(progress: number): number {
+  return minCameraDistance + Math.max(0, Math.min(1, progress)) * (maxCameraDistance - minCameraDistance);
+}
 
 export function formatZoomScaleAu(progress: number): string {
-  return `${Math.max(0.05, progress * maxScaleAu).toFixed(2)} AU`;
+  return `${progressToZoomScaleAu(progress).toFixed(2)} AU`;
 }
 
 export function getCameraPresetView(cameraPreset: CameraPreset): CameraPresetView {
@@ -68,18 +92,20 @@ function CameraPresetController({
 
 function ZoomScaleTracker({
   controlsRef,
+  cameraRef,
   onProgressChange
 }: {
   controlsRef: React.MutableRefObject<OrbitControlsImpl | null>;
+  cameraRef: React.MutableRefObject<THREE.Camera | null>;
   onProgressChange: (progress: number) => void;
 }) {
   const { camera } = useThree();
 
   useFrame(() => {
+    cameraRef.current = camera;
     const target = controlsRef.current?.target;
     const distance = target ? camera.position.distanceTo(target) : camera.position.length();
-    const progress = Math.max(0, Math.min(1, (distance - minCameraDistance) / (maxCameraDistance - minCameraDistance)));
-    onProgressChange(progress);
+    onProgressChange(cameraDistanceToZoomProgress(distance));
   });
 
   return null;
@@ -87,9 +113,40 @@ function ZoomScaleTracker({
 
 export function SolarSystemCanvas({ locale, elapsedDays, cameraPreset, selectedBodyId, layers, onSelectBody }: SolarSystemCanvasProps) {
   const controlsRef = useRef<OrbitControlsImpl | null>(null);
+  const cameraRef = useRef<THREE.Camera | null>(null);
   const initialCameraView = getCameraPresetView(cameraPreset);
   const [zoomProgress, setZoomProgress] = useState(1);
+  const currentScaleAu = progressToZoomScaleAu(zoomProgress);
   const currentScaleLabel = formatZoomScaleAu(zoomProgress);
+  const canDecreaseScale = currentScaleAu > minScaleAu;
+  const canIncreaseScale = currentScaleAu < maxScaleAu;
+
+  const adjustZoomScale = useCallback(
+    (deltaAu: number) => {
+      const camera = cameraRef.current;
+      const controls = controlsRef.current;
+      if (!camera || !controls) {
+        return;
+      }
+
+      const targetScaleAu = clampZoomScaleAu(currentScaleAu + deltaAu);
+      const targetProgress = zoomScaleAuToProgress(targetScaleAu);
+      const targetDistance = zoomProgressToCameraDistance(targetProgress);
+      const target = controls.target;
+      const direction = camera.position.clone().sub(target);
+
+      if (direction.lengthSq() < 0.000001) {
+        direction.set(...initialCameraView.position).sub(new THREE.Vector3(...initialCameraView.target));
+      }
+
+      direction.normalize();
+      camera.position.copy(target).add(direction.multiplyScalar(targetDistance));
+      camera.lookAt(target);
+      controls.update();
+      setZoomProgress(targetProgress);
+    },
+    [currentScaleAu, initialCameraView.position, initialCameraView.target]
+  );
 
   return (
     <section className="relative h-[min(78vh,820px)] min-h-[620px] overflow-hidden rounded-ui border border-white/10 bg-[#03050b]">
@@ -118,7 +175,7 @@ export function SolarSystemCanvas({ locale, elapsedDays, cameraPreset, selectedB
           />
         ))}
         <CameraPresetController cameraPreset={cameraPreset} controlsRef={controlsRef} />
-        <ZoomScaleTracker controlsRef={controlsRef} onProgressChange={setZoomProgress} />
+        <ZoomScaleTracker controlsRef={controlsRef} cameraRef={cameraRef} onProgressChange={setZoomProgress} />
         <OrbitControls
           ref={controlsRef}
           enableDamping
@@ -126,6 +183,7 @@ export function SolarSystemCanvas({ locale, elapsedDays, cameraPreset, selectedB
           minDistance={minCameraDistance}
           maxDistance={maxCameraDistance}
           target={initialCameraView.target}
+          zoomSpeed={orbitControlsZoomSpeed}
           zoomToCursor
         />
       </Canvas>
@@ -145,7 +203,27 @@ export function SolarSystemCanvas({ locale, elapsedDays, cameraPreset, selectedB
             {currentScaleLabel}
           </span>
         </div>
-        <p className="mt-1 text-right text-white">10 AU</p>
+        <div className="mt-2 flex items-center justify-between gap-2">
+          <button
+            type="button"
+            aria-label={locale === "zh" ? "缩小比例尺 0.1 AU" : "Decrease zoom scale by 0.1 AU"}
+            disabled={!canDecreaseScale}
+            onClick={() => adjustZoomScale(-zoomScaleStepAu)}
+            className="inline-flex h-6 w-7 items-center justify-center rounded border border-white/15 bg-white/10 text-sm font-semibold text-white transition hover:bg-white/20 disabled:cursor-not-allowed disabled:opacity-35"
+          >
+            −
+          </button>
+          <p className="text-right text-white">10 AU</p>
+          <button
+            type="button"
+            aria-label={locale === "zh" ? "放大比例尺 0.1 AU" : "Increase zoom scale by 0.1 AU"}
+            disabled={!canIncreaseScale}
+            onClick={() => adjustZoomScale(zoomScaleStepAu)}
+            className="inline-flex h-6 w-7 items-center justify-center rounded border border-white/15 bg-white/10 text-sm font-semibold text-white transition hover:bg-white/20 disabled:cursor-not-allowed disabled:opacity-35"
+          >
+            +
+          </button>
+        </div>
       </div>
     </section>
   );

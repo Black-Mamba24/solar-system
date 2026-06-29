@@ -25,7 +25,7 @@ export interface LearningModule {
 export interface AssetSource {
   id: string;
   bodyId: string;
-  purpose: "diffuse" | "ring" | "clouds" | "fallback";
+  purpose: "diffuse" | "surface" | "ring" | "clouds" | "fallback";
   title: string;
   url: string;
   agency: string;

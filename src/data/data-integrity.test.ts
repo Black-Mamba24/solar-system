@@ -5,6 +5,30 @@ import { assetSources } from "./assets";
 import { bodies } from "./bodies";
 import { learningModules } from "./modules";
 
+const realAxialTiltsDeg: Record<string, number> = {
+  mercury: 0.034,
+  venus: 177.36,
+  earth: 23.44,
+  moon: 6.68,
+  mars: 25.19,
+  jupiter: 3.13,
+  saturn: 26.73,
+  uranus: 97.77,
+  neptune: 28.32
+};
+
+const realOrbitInclinationsDeg: Record<string, number> = {
+  mercury: 7,
+  venus: 3.4,
+  earth: 0,
+  moon: 5.1,
+  mars: 1.85,
+  jupiter: 1.3,
+  saturn: 2.49,
+  uranus: 0.77,
+  neptune: 1.77
+};
+
 describe("data integrity", () => {
   it("has exactly one available learning module", () => {
     expect(learningModules.filter((module) => module.status === "available").map((module) => module.id)).toEqual(["overview"]);
@@ -66,6 +90,17 @@ describe("data integrity", () => {
       .map((body) => body.id);
 
     expect(mismatchedTextures).toEqual([]);
+  });
+
+  it("uses separate real equirectangular Earth surface and cloud textures for the 3D model", () => {
+    const earthSurface = assetSources.find((asset) => asset.bodyId === "earth" && asset.purpose === "surface");
+    const earthClouds = assetSources.find((asset) => asset.bodyId === "earth" && asset.purpose === "clouds");
+
+    expect(earthSurface?.localPath).toBe("/textures/earth-surface.jpg");
+    expect(earthSurface?.processing).toMatch(/equirectangular/i);
+    expect(earthSurface?.processing).not.toMatch(/not a true equirectangular/i);
+    expect(earthClouds?.localPath).toBe("/textures/earth-clouds.png");
+    expect(earthClouds?.processing).toMatch(/cloud/i);
   });
 
   it("uses local texture paths and secure source urls for assets", () => {
@@ -132,5 +167,37 @@ describe("data integrity", () => {
       .map((body) => body.id);
 
     expect(missingOrbits).toEqual([]);
+  });
+
+  it("uses real axial tilt values for rendered non-sun bodies", () => {
+    for (const [bodyId, axialTiltDeg] of Object.entries(realAxialTiltsDeg)) {
+      const body = bodies.find((item) => item.id === bodyId);
+
+      expect(body?.axialTiltDeg, bodyId).toBeCloseTo(axialTiltDeg, 3);
+    }
+  });
+
+  it("uses real orbital inclination values for rendered orbits", () => {
+    for (const [bodyId, inclinationDeg] of Object.entries(realOrbitInclinationsDeg)) {
+      const body = bodies.find((item) => item.id === bodyId);
+
+      expect(body?.orbit?.inclinationDeg, bodyId).toBeCloseTo(inclinationDeg, 2);
+    }
+  });
+
+  it("keeps tilt and orbit inclination angles finite and display-safe", () => {
+    for (const body of bodies) {
+      if (body.axialTiltDeg !== undefined) {
+        expect(Number.isFinite(body.axialTiltDeg), body.id).toBe(true);
+        expect(body.axialTiltDeg, body.id).toBeGreaterThanOrEqual(0);
+        expect(body.axialTiltDeg, body.id).toBeLessThanOrEqual(180);
+      }
+
+      if (body.orbit) {
+        expect(Number.isFinite(body.orbit.inclinationDeg), body.id).toBe(true);
+        expect(body.orbit.inclinationDeg, body.id).toBeGreaterThanOrEqual(0);
+        expect(body.orbit.inclinationDeg, body.id).toBeLessThanOrEqual(180);
+      }
+    }
   });
 });

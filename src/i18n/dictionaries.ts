@@ -8,6 +8,7 @@ export interface AppDictionary {
   homeEntryNote: string;
   comingSoon: string;
   enterOverview: string;
+  backHome: string;
   compressedScale: string;
   overviewTitle: string;
   controls: {
@@ -34,6 +35,9 @@ export interface AppDictionary {
     earthBaseline: string;
     noMoons: string;
     notApplicable: string;
+    speakIntro: string;
+    stopSpeaking: string;
+    speechUnavailable: string;
   };
   bodyTypes: {
     star: string;
@@ -61,6 +65,7 @@ export const dictionaries = {
     homeEntryNote: "从概述模块进入可交互的太阳系轨道视图。",
     comingSoon: "即将开放",
     enterOverview: "进入太阳系概述",
+    backHome: "返回首页",
     compressedScale: "比例经过教学压缩",
     overviewTitle: "太阳系概述",
     controls: {
@@ -86,7 +91,10 @@ export const dictionaries = {
       earthComparison: "约为地球的",
       earthBaseline: "地球基准",
       noMoons: "无天然卫星",
-      notApplicable: "不适用"
+      notApplicable: "不适用",
+      speakIntro: "播报介绍",
+      stopSpeaking: "停止播报",
+      speechUnavailable: "当前浏览器不支持语音播报"
     },
     bodyTypes: {
       star: "恒星",
@@ -112,6 +120,7 @@ export const dictionaries = {
     homeEntryNote: "Start with the interactive orbital overview module.",
     comingSoon: "Coming soon",
     enterOverview: "Enter overview",
+    backHome: "Back to home",
     compressedScale: "Scale compressed for learning",
     overviewTitle: "Solar System Overview",
     controls: {
@@ -137,7 +146,10 @@ export const dictionaries = {
       earthComparison: "about Earth x",
       earthBaseline: "Earth baseline",
       noMoons: "No natural moons",
-      notApplicable: "N/A"
+      notApplicable: "N/A",
+      speakIntro: "Read introduction",
+      stopSpeaking: "Stop reading",
+      speechUnavailable: "Speech playback is not supported in this browser"
     },
     bodyTypes: {
       star: "Star",

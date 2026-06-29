@@ -11,6 +11,14 @@ vi.mock("next/navigation", () => ({
   useSearchParams: () => new URLSearchParams()
 }));
 
+vi.mock("./HomeSunHeroStage", () => ({
+  HomeSunHeroStage: () => (
+    <figure role="img" aria-label="动态 3D 太阳模型">
+      dynamic Sun hero
+    </figure>
+  )
+}));
+
 describe("HomePage", () => {
   it("renders all modules and only enables overview", () => {
     render(<HomePage locale="zh" />);
@@ -32,5 +40,15 @@ describe("HomePage", () => {
     expect(screen.getByText(dictionaries.en.homeTitle)).toBeInTheDocument();
     expect(screen.queryByText(dictionaries.en.homeEntryNote)).not.toBeInTheDocument();
     expect(screen.getAllByText("Coming soon")).toHaveLength(5);
+  });
+
+  it("renders only the dynamic Sun hero instead of the old planet collage", () => {
+    render(<HomePage locale="zh" />);
+
+    expect(screen.getByRole("img", { name: "动态 3D 太阳模型" })).toBeInTheDocument();
+    expect(screen.queryByRole("img", { name: "地球" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("img", { name: "木星" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("img", { name: "土星" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("img", { name: "海王星" })).not.toBeInTheDocument();
   });
 });

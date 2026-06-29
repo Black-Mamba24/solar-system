@@ -3,11 +3,13 @@
 import React from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { BackHomeLink } from "@/components/layout/BackHomeLink";
 import { LanguageSwitch } from "@/components/layout/LanguageSwitch";
 import { SolarSystemCanvas } from "@/components/solar-system/SolarSystemCanvas";
 import { bodies } from "@/data/bodies";
 import { dictionaries } from "@/i18n/dictionaries";
 import { parseUrlState, serializeUrlState } from "@/lib/url-state";
+import { isWebGLAvailable } from "@/lib/webgl";
 import type { CameraPreset, LayerKey, Locale } from "@/types/domain";
 import { BodyInfoPanel } from "./BodyInfoPanel";
 import { ControlBar } from "./ControlBar";
@@ -19,19 +21,6 @@ function getValidBodyId(bodyId: string | undefined): string {
 
 function serializeUiState(state: { selectedBodyId: string; camera: CameraPreset; layers: Record<LayerKey, boolean> }): string {
   return JSON.stringify(state);
-}
-
-export function isWebGLAvailable(): boolean {
-  if (typeof document === "undefined") {
-    return true;
-  }
-
-  try {
-    const canvas = document.createElement("canvas");
-    return Boolean(canvas.getContext("webgl") || canvas.getContext("webgl2"));
-  } catch {
-    return false;
-  }
 }
 
 export function OverviewPage({ locale }: { locale: Locale }) {
@@ -109,12 +98,15 @@ export function OverviewPage({ locale }: { locale: Locale }) {
 
   return (
     <main className="min-h-screen bg-space px-4 py-5 text-white md:px-6">
-      <header className="mx-auto flex max-w-7xl items-start justify-between gap-4">
-        <div>
+      <header className="mx-auto max-w-7xl">
+        <div className="flex items-center justify-between gap-4">
           <p className="text-sm uppercase tracking-[0.22em] text-orbit">{dictionary.brandName}</p>
-          <h1 className="mt-1 text-2xl font-semibold md:text-4xl">{dictionary.overviewTitle}</h1>
+          <nav aria-label={activeLocale === "zh" ? "页面操作" : "Page actions"} className="flex shrink-0 items-center gap-2">
+            <BackHomeLink locale={activeLocale} />
+            <LanguageSwitch locale={activeLocale} />
+          </nav>
         </div>
-        <LanguageSwitch locale={activeLocale} />
+        <h1 className="mt-2 text-2xl font-semibold md:text-4xl">{dictionary.overviewTitle}</h1>
       </header>
 
       <div className="mx-auto mt-5 grid max-w-7xl gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
