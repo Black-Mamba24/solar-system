@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from "react";
 import * as THREE from "three";
+import { withBasePath } from "@/lib/base-path";
 
 export function useImageTexture(path: string | undefined, colorSpace: THREE.ColorSpace = THREE.SRGBColorSpace): THREE.Texture | null {
   const texture = useMemo(() => {
@@ -8,7 +9,7 @@ export function useImageTexture(path: string | undefined, colorSpace: THREE.Colo
     }
 
     const loader = new THREE.TextureLoader();
-    const loadedTexture = loader.load(path);
+    const loadedTexture = loader.load(withBasePath(path));
     loadedTexture.colorSpace = colorSpace;
     loadedTexture.wrapS = THREE.RepeatWrapping;
     loadedTexture.wrapT = THREE.ClampToEdgeWrapping;

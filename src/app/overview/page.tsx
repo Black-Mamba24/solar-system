@@ -1,11 +1,10 @@
-import React from "react";
-import { OverviewPage } from "@/components/overview/OverviewPage";
-import { parseLocale } from "@/lib/locale";
+import React, { Suspense } from "react";
+import { OverviewPageClient } from "@/components/overview/OverviewPageClient";
 
-interface PageProps {
-  searchParams?: Record<string, string | string[] | undefined>;
-}
-
-export default function Page({ searchParams }: PageProps) {
-  return <OverviewPage locale={parseLocale(searchParams?.lang)} />;
+export default function Page() {
+  return (
+    <Suspense fallback={<main className="min-h-screen bg-space text-white" />}>
+      <OverviewPageClient />
+    </Suspense>
+  );
 }

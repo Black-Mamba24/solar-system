@@ -1,10 +1,10 @@
-import { HomePage } from "@/components/home/HomePage";
-import { parseLocale } from "@/lib/locale";
+import React, { Suspense } from "react";
+import { HomePageClient } from "@/components/home/HomePageClient";
 
-interface PageProps {
-  searchParams?: Record<string, string | string[] | undefined>;
-}
-
-export default function Page({ searchParams }: PageProps) {
-  return <HomePage locale={parseLocale(searchParams?.lang)} />;
+export default function Page() {
+  return (
+    <Suspense fallback={<main className="min-h-screen bg-space text-white" />}>
+      <HomePageClient />
+    </Suspense>
+  );
 }

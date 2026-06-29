@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { withBasePath } from "@/lib/base-path";
 import { isWebGLAvailable } from "@/lib/webgl";
 import type { Locale } from "@/types/domain";
 import { HomeSunHeroCanvas } from "./HomeSunHeroCanvas";
@@ -14,7 +15,7 @@ function HomeSunHeroFallback() {
   return (
     <div className="absolute inset-0 overflow-hidden" aria-hidden="true">
       <div className="absolute left-[-28%] top-1/2 size-[34rem] -translate-y-1/2 rounded-full bg-[radial-gradient(circle_at_36%_32%,rgba(255,246,181,0.95)_0%,rgba(255,175,54,0.88)_24%,rgba(255,79,20,0.74)_52%,rgba(38,10,2,0.9)_100%)] shadow-[0_0_90px_rgba(248,196,92,0.78),0_0_190px_rgba(255,74,22,0.42)] md:size-[48rem] lg:left-[-20%] lg:size-[58rem]">
-        <div className="absolute inset-0 rounded-full bg-cover bg-center opacity-70 mix-blend-screen" style={{ backgroundImage: "url(/textures/sun-surface.jpg)" }} />
+        <div className="absolute inset-0 rounded-full bg-cover bg-center opacity-70 mix-blend-screen" style={{ backgroundImage: `url(${withBasePath("/textures/sun-surface.jpg")})` }} />
         <div className="absolute inset-0 rounded-full bg-[radial-gradient(circle_at_62%_44%,transparent_0%,rgba(38,10,2,0.22)_42%,rgba(0,0,0,0.55)_100%)]" />
         <div className="absolute left-[56%] top-[26%] h-10 w-24 -rotate-12 rounded-full bg-[radial-gradient(ellipse,rgba(38,10,2,0.58),transparent_72%)] blur-sm" />
         <div className="absolute left-[45%] top-[62%] h-8 w-20 rotate-12 rounded-full bg-[radial-gradient(ellipse,rgba(38,10,2,0.5),transparent_72%)] blur-sm" />

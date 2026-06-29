@@ -5,6 +5,7 @@ import { Volume2, VolumeX } from "lucide-react";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { assetSources } from "@/data/assets";
 import { dictionaries } from "@/i18n/dictionaries";
+import { withBasePath } from "@/lib/base-path";
 import type { CelestialBody, Locale } from "@/types/domain";
 
 interface BodyInfoPanelProps {
@@ -248,7 +249,7 @@ export function BodyInfoPanel({ body, locale }: BodyInfoPanelProps) {
         </button>
       </div>
       {asset ? (
-        <Image src={asset.localPath} alt={body.name[locale]} width={960} height={540} className="mt-4 aspect-[16/9] w-full rounded-ui border border-white/10 object-cover" />
+        <Image src={withBasePath(asset.localPath)} alt={body.name[locale]} width={960} height={540} className="mt-4 aspect-[16/9] w-full rounded-ui border border-white/10 object-cover" />
       ) : null}
       <p className="mt-3 whitespace-pre-line text-sm leading-6 text-slate-200">{content.summary}</p>
 

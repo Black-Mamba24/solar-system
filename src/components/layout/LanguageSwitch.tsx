@@ -3,6 +3,7 @@
 import React from "react";
 import { useEffect } from "react";
 import { Languages } from "lucide-react";
+import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { dictionaries } from "@/i18n/dictionaries";
 import { oppositeLocale, withLocaleSearchParams } from "@/lib/locale";
@@ -30,7 +31,7 @@ export function LanguageSwitch({ locale }: LanguageSwitchProps) {
   }
 
   return (
-    <a
+    <Link
       href={nextHref}
       role="button"
       aria-label={dictionaries[locale].switchLanguage}
@@ -39,6 +40,6 @@ export function LanguageSwitch({ locale }: LanguageSwitchProps) {
     >
       <Languages aria-hidden="true" size={16} />
       <span>{dictionaries[nextLocale].languageName}</span>
-    </a>
+    </Link>
   );
 }
