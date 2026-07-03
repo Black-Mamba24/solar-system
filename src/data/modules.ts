@@ -13,7 +13,8 @@ export const learningModules: LearningModule[] = [
     id: "solar-eclipse",
     title: { zh: "日食", en: "Solar Eclipses" },
     description: { zh: "理解太阳、月球和地球对齐时发生的现象。", en: "Understand what happens when the Sun, Moon, and Earth align." },
-    status: "comingSoon",
+    status: "available",
+    route: "/solar-eclipse",
     focusBodyId: "moon"
   },
   {

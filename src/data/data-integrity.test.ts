@@ -30,13 +30,13 @@ const realOrbitInclinationsDeg: Record<string, number> = {
 };
 
 describe("data integrity", () => {
-  it("has exactly one available learning module", () => {
-    expect(learningModules.filter((module) => module.status === "available").map((module) => module.id)).toEqual(["overview"]);
+  it("tracks available learning modules", () => {
+    expect(learningModules.filter((module) => module.status === "available").map((module) => module.id)).toEqual(["overview", "solar-eclipse"]);
   });
 
   it("keeps coming soon modules without routes", () => {
     const comingSoon = learningModules.filter((module) => module.status === "comingSoon");
-    expect(comingSoon).toHaveLength(5);
+    expect(comingSoon).toHaveLength(4);
     expect(comingSoon.every((module) => module.route === undefined)).toBe(true);
   });
 

@@ -11,15 +11,16 @@ interface ModuleCardProps {
 export function ModuleCard({ locale, module }: ModuleCardProps) {
   const title = module.title[locale];
   const description = module.description[locale];
+  const entryLabel = module.id === "overview" ? dictionaries[locale].enterOverview : dictionaries[locale].enterModule;
 
   if (module.status === "available" && module.route) {
     return (
       <Link
         href={`${module.route}?lang=${locale}`}
-        aria-label={`${dictionaries[locale].enterOverview}: ${title}`}
+        aria-label={`${entryLabel}: ${title}`}
         className="group rounded-ui border border-orbit/45 bg-panel p-4 text-left shadow-2xl shadow-black/25 transition hover:border-orbit hover:bg-white/10 focus-visible:outline-orbit"
       >
-        <span className="text-xs uppercase tracking-[0.18em] text-orbit">{dictionaries[locale].enterOverview}</span>
+        <span className="text-xs uppercase tracking-[0.18em] text-orbit">{entryLabel}</span>
         <h2 className="mt-3 text-xl font-semibold text-white">{title}</h2>
         <p className="mt-2 text-sm leading-6 text-slate-300">{description}</p>
       </Link>
