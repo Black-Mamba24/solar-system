@@ -37,8 +37,8 @@ const earthPosition = new THREE.Vector3(spaceEarth.x, spaceEarth.y, 0);
 const earthRadius = spaceEarth.radius;
 const penumbraHotZoneRadius = 0.74;
 const umbraHotZoneRadius = 0.2;
-const maxShadowVolumeFillProgress = 0.88;
-const shadowVolumeEarthClearance = 0.08;
+const centralShadowTrackWidthScale = 0.18;
+const minCentralShadowTrackHalfWidth = 0.002;
 
 export interface EarthShadowSurfacePoint {
   local: {
@@ -58,6 +58,14 @@ export interface ShadowAxisGeometry {
   direction: THREE.Vector3;
   axisEnd: THREE.Vector3;
   intersectsEarth: boolean;
+}
+
+export function getCentralShadowTrackHalfWidth(centralBandScaleY: number): number {
+  return Math.max(minCentralShadowTrackHalfWidth, centralBandScaleY * centralShadowTrackWidthScale);
+}
+
+export function getEarthSurfaceTrackModel(model: EclipseTangentGeometry["model"]): EclipseTangentGeometry["model"] {
+  return model === "annular" ? "total" : model;
 }
 
 interface EarthSurfaceLocalPoint {
@@ -251,43 +259,19 @@ export function getEarthShadowSurfacePoint(progress: number, model: EclipseTange
   };
 }
 
+export function getPenumbraShadowVolumeAxisEndPoint(progress: number, model: EclipseTangentGeometry["model"]): THREE.Vector3 {
+  const tangentGeometry = getEclipseTangentGeometry(progress, model);
+  const shadowProjection = getSpaceShadowProjectionGeometry(tangentGeometry);
+
+  return new THREE.Vector3(shadowProjection.centerAtEarth.x, shadowProjection.centerAtEarth.y, shadowProjection.centerAtEarth.z);
+}
+
 export function getShadowTrackPointAtProgress(progress: number, model: EclipseTangentGeometry["model"]): EarthSurfaceLocalPoint | null {
   if (!getShadowAxisGeometry(progress, model).intersectsEarth) {
     return null;
   }
 
   return getEarthShadowSurfacePoint(progress, model).local;
-}
-
-export function getShadowVolumeFillProgress(start: THREE.Vector3, surfaceEnd: THREE.Vector3, startRadius: number, surfaceEndRadius: number): number {
-  for (let progress = maxShadowVolumeFillProgress; progress >= 0.06; progress -= 0.02) {
-    const fillEnd = start.clone().lerp(surfaceEnd, progress);
-    const fillEndRadius = startRadius + (surfaceEndRadius - startRadius) * progress;
-    const sampleCount = 16;
-    let clear = true;
-
-    for (let index = 0; index <= sampleCount; index += 1) {
-      const sampleProgress = index / sampleCount;
-      const center = start.clone().lerp(fillEnd, sampleProgress);
-      const radius = startRadius + (fillEndRadius - startRadius) * sampleProgress;
-      const distanceToEarthSurface = center.distanceTo(earthPosition) - radius - earthRadius;
-
-      if (distanceToEarthSurface < shadowVolumeEarthClearance) {
-        clear = false;
-        break;
-      }
-    }
-
-    if (clear) {
-      return Number(progress.toFixed(2));
-    }
-  }
-
-  return 0.04;
-}
-
-export function getShadowVolumeFillEndPoint(start: THREE.Vector3, surfaceEnd: THREE.Vector3, startRadius: number, surfaceEndRadius: number): THREE.Vector3 {
-  return start.clone().lerp(surfaceEnd, getShadowVolumeFillProgress(start, surfaceEnd, startRadius, surfaceEndRadius));
 }
 
 export function getSweptShadowTrackPoints(progress: number, model: EclipseTangentGeometry["model"]): EarthSurfaceLocalPoint[] {
@@ -384,23 +368,67 @@ function EarthShadowBands({
   time: number;
   onShadowPointSelect: SolarEclipseCanvasProps["onShadowPointSelect"];
 }) {
-  const track = getShadowTrackGeometry(tangentGeometry);
-  const sweptTrackPoints = useMemo(() => getSweptShadowTrackPoints(time, tangentGeometry.model), [tangentGeometry.model, time]);
-  const currentTrackPoints = useMemo(() => getCurrentShadowTrackPoints(time, tangentGeometry.model), [tangentGeometry.model, time]);
+  const surfaceTrackModel = getEarthSurfaceTrackModel(tangentGeometry.model);
+  const surfaceTrackGeometry = getEclipseTangentGeometry(time, surfaceTrackModel);
+  const track = getShadowTrackGeometry(surfaceTrackGeometry);
+  const sweptTrackPoints = useMemo(() => getSweptShadowTrackPoints(time, surfaceTrackModel), [surfaceTrackModel, time]);
+  const currentTrackPoints = useMemo(() => getCurrentShadowTrackPoints(time, surfaceTrackModel), [surfaceTrackModel, time]);
 
   return (
     <group name="earth-eclipse-shadow-band-layer" position={earthPosition.toArray()}>
       <EarthSurfaceTrackBand name="earth-partial-eclipse-band" points={sweptTrackPoints} halfWidth={track.partialBandScaleY * 0.2} zLift={0.012} color="#1d4ed8" opacity={0.2} />
-      <EarthSurfaceTrackBand name="earth-total-eclipse-band" points={sweptTrackPoints} halfWidth={Math.max(0.012, track.centralBandScaleY * 0.06)} zLift={0.024} color="#020617" opacity={0.42} visible={tangentGeometry.model === "total"} />
+      <EarthSurfaceTrackBand name="earth-total-eclipse-band" points={sweptTrackPoints} halfWidth={getCentralShadowTrackHalfWidth(track.centralBandScaleY)} zLift={0.024} color="#020617" opacity={0.42} visible={tangentGeometry.model === "total"} />
       {tangentGeometry.model === "annular" ? (
-        <EarthSurfaceTrackBand name="earth-annular-eclipse-band" points={sweptTrackPoints} halfWidth={Math.max(0.012, track.centralBandScaleY * 0.06)} zLift={0.036} color="#020617" opacity={0.38} />
+        <EarthSurfaceTrackBand name="earth-annular-eclipse-band" points={sweptTrackPoints} halfWidth={getCentralShadowTrackHalfWidth(track.centralBandScaleY)} zLift={0.036} color="#020617" opacity={0.38} />
       ) : null}
-      <EarthSurfaceTrackBand name="earth-penumbra-click-target" points={currentTrackPoints} halfWidth={penumbraHotZoneRadius * 0.22} zLift={0.048} color="#ffffff" opacity={0.001} onClick={(event) => onShadowPointSelect(getClickPoint(event, penumbraHotZoneRadius), "partial")} />
-      <EarthSurfaceTrackBand name="earth-umbra-click-target" points={currentTrackPoints} halfWidth={umbraHotZoneRadius * 0.22} zLift={0.06} color="#ffffff" opacity={0.001} onClick={(event) => onShadowPointSelect(getClickPoint(event, umbraHotZoneRadius), "total")} />
+      <EarthSurfaceTrackBand name="earth-penumbra-click-target" points={currentTrackPoints} halfWidth={penumbraHotZoneRadius * 0.22} zLift={0.048} color="#ffffff" opacity={0} onClick={(event) => onShadowPointSelect(getClickPoint(event, penumbraHotZoneRadius), "partial")} />
+      <EarthSurfaceTrackBand name="earth-umbra-click-target" points={currentTrackPoints} halfWidth={umbraHotZoneRadius * 0.22} zLift={0.06} color="#ffffff" opacity={0} onClick={(event) => onShadowPointSelect(getClickPoint(event, umbraHotZoneRadius), "total")} />
       {tangentGeometry.model === "annular" ? (
-        <EarthSurfaceTrackBand name="earth-antumbra-click-target" points={currentTrackPoints} halfWidth={umbraHotZoneRadius * 0.22} zLift={0.072} color="#ffffff" opacity={0.001} onClick={(event) => onShadowPointSelect(getClickPoint(event, umbraHotZoneRadius), "annular")} />
+        <EarthSurfaceTrackBand name="earth-antumbra-click-target" points={currentTrackPoints} halfWidth={umbraHotZoneRadius * 0.22} zLift={0.072} color="#ffffff" opacity={0} onClick={(event) => onShadowPointSelect(getClickPoint(event, umbraHotZoneRadius), "annular")} />
       ) : null}
     </group>
+  );
+}
+
+function GroundCoronaGlow({ innerRadius, outerRadius, opacity }: { innerRadius: number; outerRadius: number; opacity: number }) {
+  const texture = useMemo(() => {
+    if (typeof document === "undefined") {
+      return null;
+    }
+
+    const size = 512;
+    const center = size / 2;
+    const canvas = document.createElement("canvas");
+    canvas.width = size;
+    canvas.height = size;
+    const context = canvas.getContext("2d");
+
+    if (!context) {
+      return null;
+    }
+
+    const inner = (innerRadius / outerRadius) * center;
+    const gradient = context.createRadialGradient(center, center, inner, center, center, center);
+    gradient.addColorStop(0, "rgba(219, 234, 254, 0)");
+    gradient.addColorStop(0.04, "rgba(219, 234, 254, 0.78)");
+    gradient.addColorStop(0.34, "rgba(147, 197, 253, 0.34)");
+    gradient.addColorStop(0.68, "rgba(125, 211, 252, 0.13)");
+    gradient.addColorStop(1, "rgba(219, 234, 254, 0)");
+    context.fillStyle = gradient;
+    context.fillRect(0, 0, size, size);
+
+    const coronaTexture = new THREE.CanvasTexture(canvas);
+    coronaTexture.colorSpace = THREE.SRGBColorSpace;
+    coronaTexture.needsUpdate = true;
+
+    return coronaTexture;
+  }, [innerRadius, outerRadius]);
+
+  return (
+    <mesh name="ground-solar-corona" position={[0, 0, -0.03]} renderOrder={0}>
+      <planeGeometry args={[outerRadius * 2, outerRadius * 2]} />
+      <meshBasicMaterial name="ground-solar-corona-material" map={texture ?? undefined} transparent opacity={opacity} toneMapped={false} depthWrite={false} />
+    </mesh>
   );
 }
 
@@ -415,29 +443,43 @@ function SpaceEclipseScene({ state, onShadowPointSelect }: { state: SolarEclipse
   const shadowFar = new THREE.Vector3(shadowSurfacePoint.world.x, shadowSurfacePoint.world.y, shadowSurfacePoint.world.z);
   const moonShadowStart = new THREE.Vector3(moon.x, moon.y, moon.z);
   const surfaceStopProgress = clampVisual(axisGeometry.axisEnd.distanceTo(moonShadowStart) / Math.max(0.0001, shadowFar.distanceTo(moonShadowStart)), 0, 1);
-  const penumbraSurfaceRadius = Math.max(0.18, moonRadius * 0.92 + (shadowProjection.penumbraRadiusAtEarth - moonRadius * 0.92) * surfaceStopProgress);
+  const penumbraSurfaceRadius = Math.max(0.18, shadowProjection.penumbraRadiusAtEarth);
   const centralSurfaceRadius = Math.max(0.025, moonRadius * 0.96 + (shadowProjection.centralRadiusAtEarth - moonRadius * 0.96) * surfaceStopProgress);
   const penumbraStartRadius = moonRadius * 0.92;
   const centralStartRadius = moonRadius * 0.96;
-  const penumbraFillProgress = getShadowVolumeFillProgress(moonShadowStart, axisGeometry.axisEnd, penumbraStartRadius, penumbraSurfaceRadius);
-  const centralFillProgress = getShadowVolumeFillProgress(moonShadowStart, axisGeometry.axisEnd, centralStartRadius, centralSurfaceRadius);
-  const penumbraFillEnd = moonShadowStart.clone().lerp(axisGeometry.axisEnd, penumbraFillProgress);
-  const centralFillEnd = moonShadowStart.clone().lerp(axisGeometry.axisEnd, centralFillProgress);
-  const penumbraFarRadius = penumbraStartRadius + (penumbraSurfaceRadius - penumbraStartRadius) * penumbraFillProgress;
-  const centralFarRadius = centralStartRadius + (centralSurfaceRadius - centralStartRadius) * centralFillProgress;
-  const umbraVolumeEndX = state.eclipseModel === "annular" ? Math.max(moon.x + 0.2, tangentGeometry.umbraTipX) : shadowFar.x;
+  const penumbraFillEnd = getPenumbraShadowVolumeAxisEndPoint(state.time, tangentGeometry.model);
+  const penumbraFarRadius = penumbraSurfaceRadius;
   const umbraEnd =
     state.eclipseModel === "annular"
-      ? new THREE.Vector3(umbraVolumeEndX, shadowProjection.umbraTip.y, shadowProjection.umbraTip.z)
-      : centralFillEnd;
+      ? new THREE.Vector3(shadowProjection.umbraTip.x, shadowProjection.umbraTip.y, shadowProjection.umbraTip.z)
+      : axisGeometry.axisEnd;
   const antumbraStart = new THREE.Vector3(shadowProjection.umbraTip.x, shadowProjection.umbraTip.y, shadowProjection.umbraTip.z);
-  const antumbraFillProgress = getShadowVolumeFillProgress(antumbraStart, axisGeometry.axisEnd, 0.018, centralSurfaceRadius * 1.12);
-  const antumbraFillEnd = antumbraStart.clone().lerp(axisGeometry.axisEnd, antumbraFillProgress);
-  const antumbraFarRadius = 0.018 + (centralSurfaceRadius * 1.12 - 0.018) * antumbraFillProgress;
+  const antumbraFillEnd = axisGeometry.axisEnd;
+  const antumbraFarRadius = Math.max(0.026, getCentralShadowTrackHalfWidth(getShadowTrackGeometry(getEclipseTangentGeometry(state.time, "total")).centralBandScaleY));
   const penumbraFrontEarthZ = shadowProjection.centerAtEarth.z - shadowProjection.penumbraRadiusAtEarth;
   const penumbraBackEarthZ = shadowProjection.centerAtEarth.z + shadowProjection.penumbraRadiusAtEarth;
   const umbraFrontEarthZ = shadowProjection.centerAtEarth.z + shadowProjection.centralRadiusAtEarth;
   const umbraBackEarthZ = shadowProjection.centerAtEarth.z - shadowProjection.centralRadiusAtEarth;
+  const umbraYUpperEnd =
+    state.eclipseModel === "annular"
+      ? antumbraStart
+      : new THREE.Vector3(earthPosition.x, tangentGeometry.umbra.upperEarthY, shadowProjection.centerAtEarth.z);
+  const umbraYLowerEnd =
+    state.eclipseModel === "annular"
+      ? antumbraStart
+      : new THREE.Vector3(earthPosition.x, tangentGeometry.umbra.lowerEarthY, shadowProjection.centerAtEarth.z);
+  const umbraZFrontEnd =
+    state.eclipseModel === "annular"
+      ? antumbraStart
+      : new THREE.Vector3(earthPosition.x, shadowProjection.centerAtEarth.y, umbraFrontEarthZ);
+  const umbraZBackEnd =
+    state.eclipseModel === "annular"
+      ? antumbraStart
+      : new THREE.Vector3(earthPosition.x, shadowProjection.centerAtEarth.y, umbraBackEarthZ);
+  const antumbraYUpperEnd = axisGeometry.axisEnd.clone().add(new THREE.Vector3(0, antumbraFarRadius, 0));
+  const antumbraYLowerEnd = axisGeometry.axisEnd.clone().add(new THREE.Vector3(0, -antumbraFarRadius, 0));
+  const antumbraZFrontEnd = axisGeometry.axisEnd.clone().add(new THREE.Vector3(0, 0, antumbraFarRadius));
+  const antumbraZBackEnd = axisGeometry.axisEnd.clone().add(new THREE.Vector3(0, 0, -antumbraFarRadius));
 
   return (
     <>
@@ -453,15 +495,23 @@ function SpaceEclipseScene({ state, onShadowPointSelect }: { state: SolarEclipse
       <group name="eclipse-shadow-tangent-boundaries">
         <TangentLine name="eclipse-penumbra-y-upper-tangent" points={[new THREE.Vector3(sunPosition.x, spaceSun.radius, 0), new THREE.Vector3(moon.x, moon.y - moonRadius, moon.z), new THREE.Vector3(earthPosition.x, tangentGeometry.penumbra.upperEarthY, shadowProjection.centerAtEarth.z)]} color="#94a3b8" opacity={0.42} />
         <TangentLine name="eclipse-penumbra-y-lower-tangent" points={[new THREE.Vector3(sunPosition.x, -spaceSun.radius, 0), new THREE.Vector3(moon.x, moon.y + moonRadius, moon.z), new THREE.Vector3(earthPosition.x, tangentGeometry.penumbra.lowerEarthY, shadowProjection.centerAtEarth.z)]} color="#94a3b8" opacity={0.42} />
-        <TangentLine name="eclipse-umbra-y-upper-tangent" points={[new THREE.Vector3(sunPosition.x, spaceSun.radius, 0), new THREE.Vector3(moon.x, moon.y + moonRadius, moon.z), new THREE.Vector3(earthPosition.x, tangentGeometry.umbra.upperEarthY, shadowProjection.centerAtEarth.z)]} color="#f8fafc" opacity={0.68} />
-        <TangentLine name="eclipse-umbra-y-lower-tangent" points={[new THREE.Vector3(sunPosition.x, -spaceSun.radius, 0), new THREE.Vector3(moon.x, moon.y - moonRadius, moon.z), new THREE.Vector3(earthPosition.x, tangentGeometry.umbra.lowerEarthY, shadowProjection.centerAtEarth.z)]} color="#f8fafc" opacity={0.68} />
+        <TangentLine name="eclipse-umbra-y-upper-tangent" points={[new THREE.Vector3(sunPosition.x, spaceSun.radius, 0), new THREE.Vector3(moon.x, moon.y + moonRadius, moon.z), umbraYUpperEnd]} color="#f8fafc" opacity={0.68} />
+        <TangentLine name="eclipse-umbra-y-lower-tangent" points={[new THREE.Vector3(sunPosition.x, -spaceSun.radius, 0), new THREE.Vector3(moon.x, moon.y - moonRadius, moon.z), umbraYLowerEnd]} color="#f8fafc" opacity={0.68} />
         <TangentLine name="eclipse-penumbra-z-front-tangent" points={[new THREE.Vector3(sunPosition.x, 0, spaceSun.radius), new THREE.Vector3(moon.x, moon.y, moon.z - moonRadius), new THREE.Vector3(earthPosition.x, shadowProjection.centerAtEarth.y, penumbraFrontEarthZ)]} color="#94a3b8" opacity={0.36} />
         <TangentLine name="eclipse-penumbra-z-back-tangent" points={[new THREE.Vector3(sunPosition.x, 0, -spaceSun.radius), new THREE.Vector3(moon.x, moon.y, moon.z + moonRadius), new THREE.Vector3(earthPosition.x, shadowProjection.centerAtEarth.y, penumbraBackEarthZ)]} color="#94a3b8" opacity={0.36} />
-        <TangentLine name="eclipse-umbra-z-front-tangent" points={[new THREE.Vector3(sunPosition.x, 0, spaceSun.radius), new THREE.Vector3(moon.x, moon.y, moon.z + moonRadius), new THREE.Vector3(earthPosition.x, shadowProjection.centerAtEarth.y, umbraFrontEarthZ)]} color="#f8fafc" opacity={0.6} />
-        <TangentLine name="eclipse-umbra-z-back-tangent" points={[new THREE.Vector3(sunPosition.x, 0, -spaceSun.radius), new THREE.Vector3(moon.x, moon.y, moon.z - moonRadius), new THREE.Vector3(earthPosition.x, shadowProjection.centerAtEarth.y, umbraBackEarthZ)]} color="#f8fafc" opacity={0.6} />
+        <TangentLine name="eclipse-umbra-z-front-tangent" points={[new THREE.Vector3(sunPosition.x, 0, spaceSun.radius), new THREE.Vector3(moon.x, moon.y, moon.z + moonRadius), umbraZFrontEnd]} color="#f8fafc" opacity={0.6} />
+        <TangentLine name="eclipse-umbra-z-back-tangent" points={[new THREE.Vector3(sunPosition.x, 0, -spaceSun.radius), new THREE.Vector3(moon.x, moon.y, moon.z - moonRadius), umbraZBackEnd]} color="#f8fafc" opacity={0.6} />
+        {state.eclipseModel === "annular" ? (
+          <>
+            <TangentLine name="eclipse-antumbra-y-upper-tangent" points={[antumbraStart, antumbraYUpperEnd]} color="#f8fafc" opacity={0.44} />
+            <TangentLine name="eclipse-antumbra-y-lower-tangent" points={[antumbraStart, antumbraYLowerEnd]} color="#f8fafc" opacity={0.44} />
+            <TangentLine name="eclipse-antumbra-z-front-tangent" points={[antumbraStart, antumbraZFrontEnd]} color="#f8fafc" opacity={0.38} />
+            <TangentLine name="eclipse-antumbra-z-back-tangent" points={[antumbraStart, antumbraZBackEnd]} color="#f8fafc" opacity={0.38} />
+          </>
+        ) : null}
         <TangentLine name="eclipse-shadow-axis-surface-contact" points={[new THREE.Vector3(moon.x, moon.y, moon.z), axisGeometry.axisEnd]} color="#60a5fa" opacity={0.5} />
         <ShadowConicVolume name="eclipse-penumbra-volume" start={moonShadowStart} end={penumbraFillEnd} startRadius={penumbraStartRadius} endRadius={penumbraFarRadius} color="#3b82f6" opacity={0.11} renderOrder={1} />
-        <ShadowConicVolume name="eclipse-umbra-volume" start={moonShadowStart} end={umbraEnd} startRadius={moonRadius * 0.96} endRadius={state.eclipseModel === "annular" ? 0.012 : centralFarRadius} color="#020617" opacity={0.24} renderOrder={2} />
+        <ShadowConicVolume name="eclipse-umbra-volume" start={moonShadowStart} end={umbraEnd} startRadius={moonRadius * 0.96} endRadius={state.eclipseModel === "annular" ? 0.012 : centralSurfaceRadius} color="#020617" opacity={0.24} renderOrder={2} />
         {state.eclipseModel === "annular" ? (
           <ShadowConicVolume name="eclipse-antumbra-volume" start={antumbraStart} end={antumbraFillEnd} startRadius={0.018} endRadius={antumbraFarRadius} color="#020617" opacity={0.18} renderOrder={3} />
         ) : null}
@@ -476,23 +526,24 @@ function SpaceEclipseScene({ state, onShadowPointSelect }: { state: SolarEclipse
 
 function GroundEclipseScene({ state }: { state: SolarEclipseState }) {
   const appearance = getGroundEclipseAppearance(state);
-  const ringOpacity = appearance.ringVisible ? 0.84 : 0;
   const sunAsset = getSurfaceAsset("sun");
   const sunTexture = useImageTexture(sunAsset?.localPath);
+  const coronaInnerRadius = Math.max(appearance.sunRadius * 1.02, appearance.moonRadius * 1.01);
 
   return (
     <group name="ground-eclipse-disc-view">
-      <mesh name="ground-sun-disc" position={[0, 0, 0]}>
-        <circleGeometry args={[1.42, 192]} />
-        <meshBasicMaterial map={sunTexture ?? undefined} color={sunTexture ? "#fff2a8" : "#ff8a20"} toneMapped={false} />
+      <GroundCoronaGlow innerRadius={coronaInnerRadius} outerRadius={appearance.sunRadius * 1.58} opacity={appearance.coronaOpacity} />
+      <mesh name="ground-sun-disc" position={[0, 0, 0]} renderOrder={1}>
+        <circleGeometry args={[appearance.sunRadius, 192]} />
+        <meshBasicMaterial name="ground-sun-disc-material" map={sunTexture ?? undefined} color={sunTexture ? "#fff2a8" : "#ff8a20"} toneMapped={false} />
       </mesh>
-      <mesh name="ground-annular-light-ring" position={[0, 0, 0.02]}>
-        <ringGeometry args={[appearance.moonScale * 1.42, 1.42, 192]} />
-        <meshBasicMaterial color="#fff3b0" transparent opacity={ringOpacity} side={THREE.DoubleSide} toneMapped={false} />
+      <mesh name="ground-annular-light-ring" position={[0, 0, 0.02]} renderOrder={2}>
+        <ringGeometry args={[Math.min(appearance.moonRadius, appearance.sunRadius * 0.98), appearance.sunRadius, 192]} />
+        <meshBasicMaterial name="ground-annular-light-ring-material" color="#fff3b0" transparent opacity={appearance.ringOpacity} side={THREE.DoubleSide} toneMapped={false} depthWrite={false} />
       </mesh>
-      <mesh name="ground-moon-occluder" position={[appearance.moonOffset.x, appearance.moonOffset.y, 0.04]} scale={[appearance.moonScale, appearance.moonScale, 1]}>
-        <circleGeometry args={[1.42, 192]} />
-        <meshBasicMaterial color="#020617" />
+      <mesh name="ground-moon-occluder" position={[appearance.moonOffset.x, appearance.moonOffset.y, 0.04]} renderOrder={3}>
+        <circleGeometry args={[appearance.moonRadius, 192]} />
+        <meshBasicMaterial name="ground-moon-occluder-material" color="#020617" />
       </mesh>
     </group>
   );

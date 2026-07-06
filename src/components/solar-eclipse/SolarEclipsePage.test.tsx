@@ -53,12 +53,12 @@ describe("SolarEclipsePage", () => {
     expect(screen.getByRole("button", { name: "播放" })).toBeInTheDocument();
     expect(screen.getByRole("combobox", { name: "速度" })).toHaveValue("normal");
     expect(screen.getByRole("slider", { name: "月球轨迹时间" })).toHaveValue("0");
-    expect(screen.getByText("影带进入")).toBeInTheDocument();
-    expect(screen.getByText("影带居中")).toBeInTheDocument();
-    expect(screen.getByText("影带离开")).toBeInTheDocument();
-    expect(screen.queryByText("初亏")).not.toBeInTheDocument();
-    expect(screen.queryByText("食甚")).not.toBeInTheDocument();
-    expect(screen.queryByText("复圆")).not.toBeInTheDocument();
+    expect(screen.getByText("初亏")).toBeInTheDocument();
+    expect(screen.getByText("食甚")).toBeInTheDocument();
+    expect(screen.getByText("复圆")).toBeInTheDocument();
+    expect(screen.queryByText("影带进入")).not.toBeInTheDocument();
+    expect(screen.queryByText("影带居中")).not.toBeInTheDocument();
+    expect(screen.queryByText("影带离开")).not.toBeInTheDocument();
   });
 
   it("switches between total and annular space models without entering ground view", () => {

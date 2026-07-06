@@ -2,8 +2,8 @@ import React from "react";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import * as THREE from "three";
-import { createInitialEclipseState, getSpaceMoonPosition, selectEclipseModel, selectGroundMode, spaceEarth } from "@/lib/solar-eclipse";
-import { getEarthShadowSurfacePoint, getShadowAxisGeometry, getShadowPointFromLocalPoint, getShadowTrackPointAtProgress, getShadowVolumeFillEndPoint, getShadowVolumeFillProgress, getSweptShadowTrackPoints, SolarEclipseCanvas } from "./SolarEclipseCanvas";
+import { createInitialEclipseState, getEclipseTangentGeometry, getShadowTrackGeometry, selectEclipseModel, selectGroundMode, spaceEarth } from "@/lib/solar-eclipse";
+import { getCentralShadowTrackHalfWidth, getEarthShadowSurfacePoint, getEarthSurfaceTrackModel, getPenumbraShadowVolumeAxisEndPoint, getShadowAxisGeometry, getShadowPointFromLocalPoint, getShadowTrackPointAtProgress, getSweptShadowTrackPoints, SolarEclipseCanvas } from "./SolarEclipseCanvas";
 
 const dreiMocks = vi.hoisted(() => ({
   orbitControlsProps: [] as Array<Record<string, unknown>>
@@ -41,9 +41,28 @@ function createCanvasContextMock() {
     createRadialGradient: vi.fn(() => gradient),
     ellipse: vi.fn(),
     fill: vi.fn(),
+    fillRect: vi.fn(),
     set fillStyle(_value: string | CanvasGradient | CanvasPattern) {},
     set globalCompositeOperation(_value: GlobalCompositeOperation) {}
   } as unknown as CanvasRenderingContext2D;
+}
+
+function parseVectorAttribute(element: Element, attributeName: string): THREE.Vector3 {
+  const values = (element.getAttribute(attributeName) ?? "").split(",").map(Number);
+
+  return new THREE.Vector3(values[0], values[1], values[2]);
+}
+
+function parseNumberAttributeTuple(element: Element, attributeName: string): number[] {
+  return (element.getAttribute(attributeName) ?? "").split(",").map(Number);
+}
+
+function getRenderedShadowVolumeEnd(meshName: string, start: THREE.Vector3): THREE.Vector3 {
+  const volume = document.querySelector(`mesh[name="${meshName}"]`);
+
+  expect(volume).toBeInTheDocument();
+
+  return parseVectorAttribute(volume!, "position").multiplyScalar(2).sub(start);
 }
 
 describe("SolarEclipseCanvas", () => {
@@ -63,14 +82,116 @@ describe("SolarEclipseCanvas", () => {
     expect(getShadowPointFromLocalPoint({ x: -0.74, y: 0.74 }, 0.74)).toEqual({ x: -1, y: 1 });
   });
 
-  it("anchors the visible penumbra volume to the current Earth surface shadow point", () => {
+  it("keeps the visible penumbra volume on the Sun-Moon shadow axis", () => {
     const surfacePoint = getEarthShadowSurfacePoint(0.5, "total");
     const surfaceRadius = Math.hypot(surfacePoint.local.x, surfacePoint.local.y, surfacePoint.local.z);
+    const axisGeometry = getShadowAxisGeometry(0.5, "total");
+    const penumbraEndPoint = getPenumbraShadowVolumeAxisEndPoint(0.5, "total");
+    const penumbraDirection = penumbraEndPoint.clone().sub(axisGeometry.start).normalize();
 
     expect(surfaceRadius).toBeCloseTo(spaceEarth.radius, 6);
     expect(surfacePoint.world.x).toBeCloseTo(spaceEarth.x + surfacePoint.local.x, 6);
     expect(surfacePoint.world.y).toBeCloseTo(surfacePoint.local.y, 6);
     expect(surfacePoint.world.z).toBeCloseTo(surfacePoint.local.z, 6);
+    expect(penumbraEndPoint.x).toBeCloseTo(spaceEarth.x, 6);
+    expect(penumbraDirection.dot(axisGeometry.direction)).toBeCloseTo(1, 6);
+  });
+
+  it("keeps penumbra volume endpoints aligned with the light direction throughout the eclipse sweep", () => {
+    const samples = {
+      total: [0.2, 0.25, 0.5, 0.75, 0.8],
+      annular: [0.3, 0.35, 0.5, 0.75, 0.8]
+    } as const;
+
+    for (const model of ["total", "annular"] as const) {
+      for (const time of samples[model]) {
+        const axisGeometry = getShadowAxisGeometry(time, model);
+        const endPoint = getPenumbraShadowVolumeAxisEndPoint(time, model);
+        const endDirection = endPoint.clone().sub(axisGeometry.start).normalize();
+        const offAxisDistance = endPoint.clone().sub(axisGeometry.start).cross(axisGeometry.direction).length();
+
+        expect(endPoint.x).toBeCloseTo(spaceEarth.x, 6);
+        expect(endDirection.dot(axisGeometry.direction)).toBeCloseTo(1, 6);
+        expect(offAxisDistance).toBeCloseTo(0, 6);
+      }
+    }
+  });
+
+  it("renders the penumbra volume endpoint on the Sun-Moon axis during entry and exit", () => {
+    const samples = [
+      { model: "total" as const, time: 0.2 },
+      { model: "total" as const, time: 0.8 },
+      { model: "annular" as const, time: 0.3 },
+      { model: "annular" as const, time: 0.75 }
+    ];
+
+    for (const sample of samples) {
+      const state =
+        sample.model === "annular"
+          ? selectEclipseModel(createInitialEclipseState({ time: sample.time }), "annular")
+          : createInitialEclipseState({ time: sample.time });
+      const { unmount } = render(<SolarEclipseCanvas locale="zh" state={state} view="space" onShadowPointSelect={() => undefined} />);
+      const axisGeometry = getShadowAxisGeometry(sample.time, sample.model);
+      const penumbraVolume = document.querySelector('mesh[name="eclipse-penumbra-volume"]');
+      const penumbraGeometry = document.querySelector('mesh[name="eclipse-penumbra-volume"] cylinderGeometry');
+
+      expect(penumbraVolume).toBeInTheDocument();
+      expect(penumbraGeometry).toBeInTheDocument();
+
+      const renderedCenter = parseVectorAttribute(penumbraVolume!, "position");
+      const [, , renderedLength] = parseNumberAttributeTuple(penumbraGeometry!, "args");
+      const renderedEnd = renderedCenter.clone().multiplyScalar(2).sub(axisGeometry.start);
+      const renderedDirection = renderedEnd.clone().sub(axisGeometry.start).normalize();
+      const offAxisDistance = renderedEnd.clone().sub(axisGeometry.start).cross(axisGeometry.direction).length();
+
+      expect(renderedLength).toBeCloseTo(renderedEnd.distanceTo(axisGeometry.start), 6);
+      expect(renderedDirection.dot(axisGeometry.direction)).toBeCloseTo(1, 6);
+      expect(offAxisDistance).toBeCloseTo(0, 6);
+
+      unmount();
+    }
+  });
+
+  it("renders totality umbra to the Earth surface instead of truncating it", () => {
+    for (const time of [0.2, 0.5, 0.8]) {
+      const state = createInitialEclipseState({ time });
+      const { unmount } = render(<SolarEclipseCanvas locale="zh" state={state} view="space" onShadowPointSelect={() => undefined} />);
+      const axisGeometry = getShadowAxisGeometry(time, "total");
+      const renderedUmbraEnd = getRenderedShadowVolumeEnd("eclipse-umbra-volume", axisGeometry.start);
+      const renderedDirection = renderedUmbraEnd.clone().sub(axisGeometry.start).normalize();
+
+      expect(renderedUmbraEnd.distanceTo(axisGeometry.axisEnd)).toBeCloseTo(0, 6);
+      expect(renderedUmbraEnd.distanceTo(new THREE.Vector3(spaceEarth.x, spaceEarth.y, 0))).toBeCloseTo(spaceEarth.radius, 6);
+      expect(renderedDirection.dot(axisGeometry.direction)).toBeCloseTo(1, 6);
+
+      unmount();
+    }
+  });
+
+  it("renders annularity as antumbra reaching Earth after the umbra tip ends before Earth", () => {
+    for (const time of [0.35, 0.5, 0.65]) {
+      const state = selectEclipseModel(createInitialEclipseState({ time }), "annular");
+      const { unmount } = render(<SolarEclipseCanvas locale="zh" state={state} view="space" onShadowPointSelect={() => undefined} />);
+      const tangentGeometry = getEclipseTangentGeometry(time, "annular");
+      const axisGeometry = getShadowAxisGeometry(time, "annular");
+      const projectionTip = getRenderedShadowVolumeEnd("eclipse-umbra-volume", axisGeometry.start);
+      const antumbraEnd = getRenderedShadowVolumeEnd("eclipse-antumbra-volume", projectionTip);
+      const antumbraGeometry = document.querySelector('mesh[name="eclipse-antumbra-volume"] cylinderGeometry');
+      const umbraDirection = projectionTip.clone().sub(axisGeometry.start).normalize();
+      const antumbraDirection = antumbraEnd.clone().sub(projectionTip).normalize();
+      const [antumbraEndRadius] = parseNumberAttributeTuple(antumbraGeometry!, "args");
+
+      expect(projectionTip.x).toBeCloseTo(tangentGeometry.umbraTipX, 6);
+      expect(projectionTip.distanceTo(new THREE.Vector3(spaceEarth.x, spaceEarth.y, 0))).toBeGreaterThan(spaceEarth.radius);
+      expect(projectionTip.distanceTo(axisGeometry.start)).toBeLessThan(axisGeometry.axisEnd.distanceTo(axisGeometry.start));
+      expect(umbraDirection.dot(axisGeometry.direction)).toBeCloseTo(1, 6);
+      expect(antumbraEnd.distanceTo(axisGeometry.axisEnd)).toBeCloseTo(0, 6);
+      expect(antumbraEnd.distanceTo(new THREE.Vector3(spaceEarth.x, spaceEarth.y, 0))).toBeCloseTo(spaceEarth.radius, 6);
+      expect(antumbraDirection.dot(axisGeometry.direction)).toBeCloseTo(1, 6);
+      expect(antumbraEndRadius).toBeLessThan(0.04);
+
+      unmount();
+    }
   });
 
   it("moves the current Earth shadow patch along the sweep instead of pinning a full static path", () => {
@@ -111,32 +232,10 @@ describe("SolarEclipseCanvas", () => {
     expect(getShadowTrackPointAtProgress(0.8, "total")).not.toBeNull();
     expect(getShadowTrackPointAtProgress(0.85, "total")).toBeNull();
     expect(getShadowTrackPointAtProgress(1, "total")).toBeNull();
-    expect(getShadowTrackPointAtProgress(0.2, "annular")).toBeNull();
-    expect(getShadowTrackPointAtProgress(0.3, "annular")).not.toBeNull();
-    expect(getShadowTrackPointAtProgress(0.8, "annular")).toBeNull();
-  });
-
-  it("keeps filled shadow volume sides clear of the Earth surface", () => {
-    const moon = getSpaceMoonPosition(0.5, "total");
-    const start = new THREE.Vector3(moon.x, moon.y, moon.z);
-    const axisGeometry = getShadowAxisGeometry(0.5, "total");
-    const surfaceEnd = axisGeometry.axisEnd;
-    const startRadius = 0.24 * 0.92;
-    const surfaceEndRadius = 0.48;
-    const fillProgress = getShadowVolumeFillProgress(start, surfaceEnd, startRadius, surfaceEndRadius);
-    const fillEnd = getShadowVolumeFillEndPoint(start, surfaceEnd, startRadius, surfaceEndRadius);
-    const fillDirection = fillEnd.clone().sub(start).normalize();
-
-    expect(fillEnd.distanceTo(start)).toBeLessThan(surfaceEnd.distanceTo(start));
-    expect(fillEnd.distanceTo(surfaceEnd)).toBeGreaterThan(0.04);
-    expect(fillDirection.dot(axisGeometry.direction)).toBeCloseTo(1, 5);
-    for (let index = 0; index <= 16; index += 1) {
-      const sampleProgress = index / 16;
-      const center = start.clone().lerp(fillEnd, sampleProgress);
-      const radius = startRadius + (surfaceEndRadius - startRadius) * fillProgress * sampleProgress;
-
-      expect(center.distanceTo(new THREE.Vector3(spaceEarth.x, spaceEarth.y, 0)) - radius).toBeGreaterThan(spaceEarth.radius);
-    }
+    expect(getShadowTrackPointAtProgress(0.3, "annular")).toBeNull();
+    expect(getShadowTrackPointAtProgress(0.35, "annular")).not.toBeNull();
+    expect(getShadowTrackPointAtProgress(0.65, "annular")).not.toBeNull();
+    expect(getShadowTrackPointAtProgress(0.7, "annular")).toBeNull();
   });
 
   it("keeps shadow axis endpoints aligned with the Sun-Moon direction", () => {
@@ -181,8 +280,8 @@ describe("SolarEclipseCanvas", () => {
     expect(document.querySelector('mesh[name="earth-current-total-eclipse-band"]')).not.toBeInTheDocument();
     expect(document.querySelector('mesh[name="earth-umbra-click-target"]')).toBeInTheDocument();
     expect(document.querySelector('mesh[name="earth-penumbra-click-target"]')).toBeInTheDocument();
-    expect(document.querySelector('mesh[name="earth-umbra-click-target"] meshBasicMaterial[opacity="0.001"]')).toBeInTheDocument();
-    expect(document.querySelector('mesh[name="earth-penumbra-click-target"] meshBasicMaterial[opacity="0.001"]')).toBeInTheDocument();
+    expect(document.querySelector('mesh[name="earth-umbra-click-target"] meshBasicMaterial[opacity="0"]')).toBeInTheDocument();
+    expect(document.querySelector('mesh[name="earth-penumbra-click-target"] meshBasicMaterial[opacity="0"]')).toBeInTheDocument();
     expect(document.querySelector('mesh[name="earth-antumbra-click-target"]')).not.toBeInTheDocument();
     expect(document.querySelector('mesh[name="earth-partial-eclipse-band"] circleGeometry')).not.toBeInTheDocument();
     expect(document.querySelector('mesh[name="earth-total-eclipse-band"] circleGeometry')).not.toBeInTheDocument();
@@ -219,11 +318,27 @@ describe("SolarEclipseCanvas", () => {
     expect(document.querySelector('mesh[name="eclipse-antumbra-cone"]')).not.toBeInTheDocument();
     expect(document.querySelector('mesh[name="eclipse-antumbra-volume"] cylinderGeometry')).toBeInTheDocument();
     expect(document.querySelector('mesh[name="eclipse-antumbra-volume"] meshBasicMaterial[name="eclipse-antumbra-volume-wireframe-material"]')).toBeInTheDocument();
+    expect(document.querySelector('line[name="eclipse-antumbra-y-upper-tangent"]')).toBeInTheDocument();
+    expect(document.querySelector('line[name="eclipse-antumbra-y-lower-tangent"]')).toBeInTheDocument();
+    expect(document.querySelector('line[name="eclipse-antumbra-z-front-tangent"]')).toBeInTheDocument();
+    expect(document.querySelector('line[name="eclipse-antumbra-z-back-tangent"]')).toBeInTheDocument();
     expect(document.querySelector('mesh[name="earth-annular-eclipse-band"]')).toBeInTheDocument();
     expect(document.querySelector('mesh[name="earth-current-partial-eclipse-band"]')).not.toBeInTheDocument();
     expect(document.querySelector('mesh[name="earth-current-total-eclipse-band"]')).not.toBeInTheDocument();
     expect(document.querySelector('mesh[name="earth-antumbra-click-target"]')).toBeInTheDocument();
-    expect(document.querySelector('mesh[name="earth-antumbra-click-target"] meshBasicMaterial[opacity="0.001"]')).toBeInTheDocument();
+    expect(document.querySelector('mesh[name="earth-antumbra-click-target"] meshBasicMaterial[opacity="0"]')).toBeInTheDocument();
+  });
+
+  it("keeps the annular surface track aligned with the total-eclipse track shape", () => {
+    const totalTrack = getShadowTrackGeometry(getEclipseTangentGeometry(0.5, "total"));
+    const annularTrack = getShadowTrackGeometry(getEclipseTangentGeometry(0.5, "annular"));
+    const totalHalfWidth = getCentralShadowTrackHalfWidth(totalTrack.centralBandScaleY);
+
+    expect(getEarthSurfaceTrackModel("annular")).toBe("total");
+    expect(getEarthSurfaceTrackModel("total")).toBe("total");
+    expect(totalHalfWidth).toBeGreaterThan(0.002);
+    expect(annularTrack.centralBandScaleY).not.toBe(totalTrack.centralBandScaleY);
+    expect(getSweptShadowTrackPoints(0.5, "annular")).not.toEqual(getSweptShadowTrackPoints(0.5, "total"));
   });
 
   it("dispatches annular shadow clicks from the antumbra target", () => {
@@ -238,16 +353,64 @@ describe("SolarEclipseCanvas", () => {
   });
 
   it("renders ground eclipse discs with stable names outside the space view", () => {
-    const state = selectGroundMode(createInitialEclipseState({ time: 0 }), "partial");
+    const { rerender } = render(<SolarEclipseCanvas locale="zh" state={selectGroundMode(createInitialEclipseState(), "total")} view="ground" onShadowPointSelect={() => undefined} />);
 
-    render(<SolarEclipseCanvas locale="zh" state={state} view="ground" onShadowPointSelect={() => undefined} />);
+    for (const mode of ["total", "partial", "annular"] as const) {
+      rerender(<SolarEclipseCanvas locale="zh" state={selectGroundMode(createInitialEclipseState(), mode)} view="ground" onShadowPointSelect={() => undefined} />);
 
-    expect(document.querySelector('group[name="ground-eclipse-disc-view"]')).toBeInTheDocument();
-    expect(document.querySelector('mesh[name="ground-sun-disc"]')).toBeInTheDocument();
-    expect(document.querySelector('mesh[name="ground-moon-occluder"]')).toBeInTheDocument();
+      expect(document.querySelector('group[name="ground-eclipse-disc-view"]')).toBeInTheDocument();
+      expect(document.querySelector('mesh[name="ground-solar-corona"]')).toBeInTheDocument();
+      expect(document.querySelector('mesh[name="ground-sun-disc"]')).toBeInTheDocument();
+      expect(document.querySelector('mesh[name="ground-annular-light-ring"]')).toBeInTheDocument();
+      expect(document.querySelector('mesh[name="ground-moon-occluder"]')).toBeInTheDocument();
+      expect(document.querySelector('mesh[name="ground-solar-corona"] planeGeometry')).toBeInTheDocument();
+      expect(document.querySelector('mesh[name="ground-sun-disc"] circleGeometry')).toBeInTheDocument();
+      expect(document.querySelector('mesh[name="ground-annular-light-ring"] ringGeometry')).toBeInTheDocument();
+      expect(document.querySelector('mesh[name="ground-moon-occluder"] circleGeometry')).toBeInTheDocument();
+    }
+
     expect(document.querySelector('group[name="ground-real-sun-model"]')).not.toBeInTheDocument();
-    expect(document.querySelector('mesh[name="ground-solar-corona"]')).not.toBeInTheDocument();
     expect(document.querySelector('points[name="sun-coronal-density-haze"]')).not.toBeInTheDocument();
+  });
+
+  it("shows total eclipse corona, annular ring, and partial offset using the unified ground model", () => {
+    const { rerender } = render(<SolarEclipseCanvas locale="zh" state={selectGroundMode(createInitialEclipseState({ time: 0.5 }), "total")} view="ground" onShadowPointSelect={() => undefined} />);
+
+    expect(document.querySelector('mesh[name="ground-solar-corona"][renderOrder="0"]')).toBeInTheDocument();
+    expect(document.querySelector('mesh[name="ground-sun-disc"][renderOrder="1"]')).toBeInTheDocument();
+    expect(document.querySelector('mesh[name="ground-annular-light-ring"][renderOrder="2"]')).toBeInTheDocument();
+    expect(document.querySelector('mesh[name="ground-moon-occluder"][renderOrder="3"]')).toBeInTheDocument();
+    expect(document.querySelector('meshBasicMaterial[name="ground-solar-corona-material"][opacity="0.88"]')).toBeInTheDocument();
+    expect(document.querySelector('meshBasicMaterial[name="ground-annular-light-ring-material"][opacity="0"]')).toBeInTheDocument();
+
+    rerender(<SolarEclipseCanvas locale="zh" state={selectGroundMode(createInitialEclipseState({ time: 0.5 }), "annular")} view="ground" onShadowPointSelect={() => undefined} />);
+
+    expect(document.querySelector('meshBasicMaterial[name="ground-solar-corona-material"][opacity="0"]')).toBeInTheDocument();
+    expect(document.querySelector('meshBasicMaterial[name="ground-annular-light-ring-material"][opacity="0.28"]')).toBeInTheDocument();
+
+    rerender(<SolarEclipseCanvas locale="zh" state={selectGroundMode(createInitialEclipseState({ time: 0.5 }), "partial")} view="ground" onShadowPointSelect={() => undefined} />);
+
+    expect(document.querySelector('meshBasicMaterial[name="ground-solar-corona-material"][opacity="0"]')).toBeInTheDocument();
+    expect(document.querySelector('meshBasicMaterial[name="ground-annular-light-ring-material"][opacity="0"]')).toBeInTheDocument();
+  });
+
+  it("passes physical apparent-disc radii into the ground eclipse geometries", () => {
+    const { rerender } = render(<SolarEclipseCanvas locale="zh" state={selectGroundMode(createInitialEclipseState({ time: 0.5 }), "total")} view="ground" onShadowPointSelect={() => undefined} />);
+
+    expect(document.querySelector('mesh[name="ground-sun-disc"] circleGeometry')).toHaveAttribute("args", expect.stringContaining("1.35"));
+    expect(document.querySelector('mesh[name="ground-moon-occluder"] circleGeometry')).toHaveAttribute("args", expect.stringContaining("1.404"));
+
+    rerender(<SolarEclipseCanvas locale="zh" state={selectGroundMode(createInitialEclipseState({ time: 0.5 }), "annular")} view="ground" onShadowPointSelect={() => undefined} />);
+
+    expect(document.querySelector('mesh[name="ground-sun-disc"] circleGeometry')).toHaveAttribute("args", expect.stringContaining("1.35"));
+    expect(document.querySelector('mesh[name="ground-moon-occluder"] circleGeometry')).toHaveAttribute("args", expect.stringContaining("1.161"));
+    expect(document.querySelector('mesh[name="ground-annular-light-ring"] ringGeometry')).toHaveAttribute("args", expect.stringContaining("1.161"));
+    expect(document.querySelector('mesh[name="ground-annular-light-ring"] ringGeometry')).toHaveAttribute("args", expect.stringContaining("1.35"));
+
+    rerender(<SolarEclipseCanvas locale="zh" state={selectGroundMode(createInitialEclipseState({ time: 0.5 }), "partial")} view="ground" onShadowPointSelect={() => undefined} />);
+
+    expect(document.querySelector('mesh[name="ground-sun-disc"] circleGeometry')).toHaveAttribute("args", expect.stringContaining("1.35"));
+    expect(document.querySelector('mesh[name="ground-moon-occluder"] circleGeometry')).toHaveAttribute("args", expect.stringContaining("1.35"));
   });
 
   it("keeps ground eclipse views front-facing instead of orbit-rotatable", () => {

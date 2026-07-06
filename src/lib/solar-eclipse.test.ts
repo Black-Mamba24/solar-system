@@ -100,42 +100,122 @@ describe("solar eclipse state", () => {
 
   it("computes distinct ground appearances for total, partial, and annular modes", () => {
     const total = getGroundEclipseAppearance(selectGroundMode(createInitialEclipseState({ time: 0.5 }), "total"));
-    const partial = getGroundEclipseAppearance(selectViewFromShadowPoint(createInitialEclipseState({ time: 0.5 }), { x: 0.65, y: -0.15 }, "partial"));
+    const partial = getGroundEclipseAppearance(selectGroundMode(createInitialEclipseState({ time: 0.5 }), "partial"));
     const annular = getGroundEclipseAppearance(selectGroundMode(createInitialEclipseState({ time: 0.5 }), "annular"));
 
     expect(total.coverage).toBeGreaterThan(0.96);
-    expect(partial.coverage).toBeGreaterThan(0);
-    expect(partial.coverage).toBeLessThan(0.9);
-    expect(partial.moonOffset.x).toBeGreaterThan(0);
+    expect(partial.coverage).toBeGreaterThan(0.73);
+    expect(partial.coverage).toBeLessThan(0.77);
+    expect(annular.coverage).toBeGreaterThan(0.7);
+    expect(annular.coverage).toBeLessThan(1);
+    expect(partial.moonOffset.x).toBe(0);
     expect(partial.moonOffset.y).toBeLessThan(0);
+    expect(partial.moonScale).toBe(1);
+    expect(partial.coronaOpacity).toBe(0);
+    expect(partial.ringOpacity).toBe(0);
+    expect(total.moonScale).toBeGreaterThan(1);
+    expect(total.coronaOpacity).toBeGreaterThan(0);
+    expect(total.ringOpacity).toBe(0);
     expect(annular.moonScale).toBeLessThan(1);
     expect(annular.ringVisible).toBe(true);
+    expect(annular.ringOpacity).toBeGreaterThan(0);
+    expect(annular.coronaOpacity).toBe(0);
   });
 
-  it("shows representative ground eclipse discs regardless of the shared space timeline", () => {
+  it("animates ground eclipse discs through ingress, maximum eclipse, and egress", () => {
     const totalStart = getGroundEclipseAppearance(selectGroundMode(createInitialEclipseState({ time: 0, mainView: "space" }), "total"));
+    const totalMiddle = getGroundEclipseAppearance(selectGroundMode(createInitialEclipseState({ time: 0.5, mainView: "space" }), "total"));
     const totalEnd = getGroundEclipseAppearance(selectGroundMode(createInitialEclipseState({ time: 1, mainView: "space" }), "total"));
     const partialStart = getGroundEclipseAppearance(selectViewFromShadowPoint(createInitialEclipseState({ time: 0 }), { x: 0.65, y: -0.15 }, "partial"));
     const partialMiddle = getGroundEclipseAppearance(selectViewFromShadowPoint(createInitialEclipseState({ time: 0.5 }), { x: 0.65, y: -0.15 }, "partial"));
     const partialEnd = getGroundEclipseAppearance(selectViewFromShadowPoint(createInitialEclipseState({ time: 1 }), { x: 0.65, y: -0.15 }, "partial"));
+    const annularStart = getGroundEclipseAppearance(selectGroundMode(createInitialEclipseState({ time: 0 }), "annular"));
+    const annularMiddle = getGroundEclipseAppearance(selectGroundMode(createInitialEclipseState({ time: 0.5 }), "annular"));
+    const annularEnd = getGroundEclipseAppearance(selectGroundMode(createInitialEclipseState({ time: 1 }), "annular"));
 
-    expect(totalStart.coverage).toBeGreaterThan(0.96);
-    expect(totalEnd.coverage).toBeGreaterThan(0.96);
-    expect(Math.hypot(totalStart.moonOffset.x, totalStart.moonOffset.y)).toBeCloseTo(0, 2);
-    expect(Math.hypot(totalEnd.moonOffset.x, totalEnd.moonOffset.y)).toBeCloseTo(0, 2);
-    expect(partialStart.coverage).toBeGreaterThan(0.1);
-    expect(partialMiddle.coverage).toBeGreaterThan(0.1);
-    expect(partialMiddle.coverage).toBeLessThan(0.9);
-    expect(partialEnd.coverage).toBeGreaterThan(0.1);
+    expect(totalStart.coverage).toBe(0);
+    expect(totalMiddle.coverage).toBe(1);
+    expect(totalEnd.coverage).toBe(0);
+    expect(Math.hypot(totalStart.moonOffset.x, totalStart.moonOffset.y)).toBeCloseTo(totalStart.sunRadius + totalStart.moonRadius, 1);
+    expect(Math.hypot(totalMiddle.moonOffset.x, totalMiddle.moonOffset.y)).toBe(0);
+    expect(Math.hypot(totalEnd.moonOffset.x, totalEnd.moonOffset.y)).toBeCloseTo(totalEnd.sunRadius + totalEnd.moonRadius, 1);
+    expect(partialStart.coverage).toBe(0);
+    expect(partialMiddle.coverage).toBeGreaterThan(0.18);
+    expect(partialMiddle.coverage).toBeLessThan(0.82);
+    expect(partialEnd.coverage).toBe(0);
+    expect(Math.hypot(partialStart.moonOffset.x, partialStart.moonOffset.y)).toBeCloseTo(partialStart.sunRadius + partialStart.moonRadius, 1);
+    expect(Math.hypot(partialEnd.moonOffset.x, partialEnd.moonOffset.y)).toBeCloseTo(partialEnd.sunRadius + partialEnd.moonRadius, 1);
+    expect(annularStart.coverage).toBe(0);
+    expect(annularMiddle.coverage).toBeGreaterThan(0);
+    expect(annularMiddle.coverage).toBeLessThan(1);
+    expect(annularMiddle.ringOpacity).toBeGreaterThan(0);
+    expect(annularEnd.coverage).toBe(0);
+    expect(Math.hypot(annularStart.moonOffset.x, annularStart.moonOffset.y)).toBeCloseTo(annularStart.sunRadius + annularStart.moonRadius, 1);
+    expect(Math.hypot(annularEnd.moonOffset.x, annularEnd.moonOffset.y)).toBeCloseTo(annularEnd.sunRadius + annularEnd.moonRadius, 1);
   });
 
-  it("keeps the apparent Moon size fixed throughout an annular ground eclipse", () => {
-    const early = getGroundEclipseAppearance(selectGroundMode(createInitialEclipseState({ time: 0.25 }), "annular"));
-    const middle = getGroundEclipseAppearance(selectGroundMode(createInitialEclipseState({ time: 0.5 }), "annular"));
-    const late = getGroundEclipseAppearance(selectGroundMode(createInitialEclipseState({ time: 0.75 }), "annular"));
+  it("uses one ground-view disc model with mode-specific apparent Moon size and light effects", () => {
+    const total = getGroundEclipseAppearance(selectGroundMode(createInitialEclipseState({ time: 0.5 }), "total"));
+    const partial = getGroundEclipseAppearance(selectViewFromShadowPoint(createInitialEclipseState({ time: 0.5 }), { x: 0.65, y: -0.15 }, "partial"));
+    const annular = getGroundEclipseAppearance(selectGroundMode(createInitialEclipseState({ time: 0.5 }), "annular"));
 
-    expect(early.moonScale).toBe(middle.moonScale);
-    expect(late.moonScale).toBe(middle.moonScale);
+    expect(total.sunRadius).toBe(partial.sunRadius);
+    expect(annular.sunRadius).toBe(partial.sunRadius);
+    expect(total.moonRadius).toBeGreaterThan(total.sunRadius);
+    expect(partial.moonRadius).toBe(partial.sunRadius);
+    expect(annular.moonRadius).toBeLessThan(annular.sunRadius);
+    expect(Math.hypot(total.moonOffset.x, total.moonOffset.y)).toBe(0);
+    expect(Math.hypot(annular.moonOffset.x, annular.moonOffset.y)).toBe(0);
+    expect(Math.hypot(partial.moonOffset.x, partial.moonOffset.y)).toBeGreaterThan(0);
+    expect(total.coronaOpacity).toBeGreaterThan(0);
+    expect(partial.coronaOpacity).toBe(0);
+    expect(annular.ringOpacity).toBeGreaterThan(0);
+  });
+
+  it("keeps the partial eclipse track horizontal while preserving a vertical miss distance", () => {
+    const start = getGroundEclipseAppearance(selectGroundMode(createInitialEclipseState({ time: 0 }), "partial"));
+    const middle = getGroundEclipseAppearance(selectGroundMode(createInitialEclipseState({ time: 0.5 }), "partial"));
+    const end = getGroundEclipseAppearance(selectGroundMode(createInitialEclipseState({ time: 1 }), "partial"));
+
+    expect(start.moonOffset.x).toBeGreaterThan(0);
+    expect(middle.moonOffset.x).toBe(0);
+    expect(end.moonOffset.x).toBeLessThan(0);
+    expect(start.moonOffset.y).toBe(middle.moonOffset.y);
+    expect(end.moonOffset.y).toBe(middle.moonOffset.y);
+    expect(Math.abs(middle.moonOffset.y)).toBeGreaterThan(0);
+    expect(middle.coverage).toBeGreaterThan(0.73);
+    expect(middle.coverage).toBeLessThan(0.77);
+  });
+
+  it("preserves first-principles ground eclipse geometry invariants", () => {
+    const total = getGroundEclipseAppearance(selectGroundMode(createInitialEclipseState({ time: 0.5 }), "total"));
+    const partial = getGroundEclipseAppearance(selectGroundMode(createInitialEclipseState({ time: 0.5 }), "partial"));
+    const annular = getGroundEclipseAppearance(selectGroundMode(createInitialEclipseState({ time: 0.5 }), "annular"));
+    const partialDistance = Math.hypot(partial.moonOffset.x, partial.moonOffset.y);
+
+    expect(total.moonRadius).toBeGreaterThan(total.sunRadius);
+    expect(total.moonOffset).toEqual({ x: 0, y: 0 });
+    expect(total.coverage).toBe(1);
+    expect(total.coronaOpacity).toBeGreaterThan(0);
+    expect(total.ringVisible).toBe(false);
+    expect(total.ringOpacity).toBe(0);
+
+    expect(partialDistance).toBeGreaterThan(Math.abs(partial.sunRadius - partial.moonRadius));
+    expect(partialDistance).toBeLessThan(partial.sunRadius + partial.moonRadius);
+    expect(partial.coverage).toBeGreaterThan(0);
+    expect(partial.coverage).toBeLessThan(1);
+    expect(partial.coronaOpacity).toBe(0);
+    expect(partial.ringVisible).toBe(false);
+    expect(partial.ringOpacity).toBe(0);
+
+    expect(annular.moonRadius).toBeLessThan(annular.sunRadius);
+    expect(annular.moonOffset).toEqual({ x: 0, y: 0 });
+    expect(annular.coverage).toBeGreaterThan(0);
+    expect(annular.coverage).toBeLessThan(1);
+    expect(annular.coronaOpacity).toBe(0);
+    expect(annular.ringVisible).toBe(true);
+    expect(annular.ringOpacity).toBeGreaterThan(0);
+    expect(annular.ringVisible).toBe(annular.ringOpacity > 0);
   });
 
   it("moves the Moon along a mostly horizontal Earth-centered orbit in both space models", () => {
@@ -173,6 +253,21 @@ describe("solar eclipse state", () => {
     expect(geometry.penumbra.lowerEarthY - geometry.penumbra.upperEarthY).toBeGreaterThan(geometry.umbra.upperEarthY - geometry.umbra.lowerEarthY);
   });
 
+  it("keeps space Moon bodies visually close in size while distance drives total versus annular geometry", () => {
+    const total = getEclipseTangentGeometry(0.5, "total");
+    const annular = getEclipseTangentGeometry(0.5, "annular");
+    const totalDistance = Math.hypot(total.moon.x - spaceEarth.x, total.moon.y - spaceEarth.y, total.moon.z);
+    const annularDistance = Math.hypot(annular.moon.x - spaceEarth.x, annular.moon.y - spaceEarth.y, annular.moon.z);
+    const sunApparentRadius = spaceSun.radius / (spaceEarth.x - spaceSun.x);
+    const totalApparentRadius = total.moonRadius / totalDistance;
+    const annularApparentRadius = annular.moonRadius / annularDistance;
+
+    expect(total.moonRadius).toBe(annular.moonRadius);
+    expect(annularDistance).toBeGreaterThan(totalDistance);
+    expect(totalApparentRadius).toBeGreaterThan(sunApparentRadius);
+    expect(annularApparentRadius).toBeLessThan(sunApparentRadius);
+  });
+
   it("keeps penumbra and umbra as four separate tangent boundaries in one section", () => {
     const geometry = getEclipseTangentGeometry(0.5, "total");
 
@@ -200,9 +295,11 @@ describe("solar eclipse state", () => {
     const projection = getSpaceShadowProjectionGeometry(geometry);
     const moon = geometry.moon;
     const progressToTip = (geometry.umbraTipX - spaceSun.x) / (moon.x - spaceSun.x);
+    const tipDistanceFromEarthCenter = Math.hypot(projection.umbraTip.x - spaceEarth.x, projection.umbraTip.y - spaceEarth.y, projection.umbraTip.z);
 
     expect(geometry.antumbra).not.toBeNull();
     expect(geometry.umbraTipX).toBeLessThan(spaceEarth.x);
+    expect(tipDistanceFromEarthCenter).toBeGreaterThan(spaceEarth.radius);
     expect(geometry.antumbra!.upperEarthY).toBeGreaterThan(geometry.antumbra!.lowerEarthY);
     expect(projection.umbraTip.x).toBe(geometry.umbraTipX);
     expect(projection.umbraTip.y).toBeCloseTo(moon.y * progressToTip, 6);
@@ -216,5 +313,14 @@ describe("solar eclipse state", () => {
     expect(early.bandY).toBeGreaterThan(0);
     expect(late.bandY).toBeLessThan(0);
     expect(early.partialBandScaleY).toBeGreaterThan(early.centralBandScaleY);
+  });
+
+  it("keeps total and annular central track widths derived from their shadow geometry", () => {
+    const totalTrack = getShadowTrackGeometry(getEclipseTangentGeometry(0.5, "total"));
+    const annularTrack = getShadowTrackGeometry(getEclipseTangentGeometry(0.5, "annular"));
+
+    expect(totalTrack.centralBandScaleY).toBeGreaterThan(0.012);
+    expect(annularTrack.centralBandScaleY).toBeGreaterThan(0.012);
+    expect(totalTrack.centralBandScaleY).not.toBe(annularTrack.centralBandScaleY);
   });
 });

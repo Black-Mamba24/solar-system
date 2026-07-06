@@ -19,10 +19,14 @@ export interface SolarEclipseState {
 }
 
 export interface GroundEclipseAppearance {
+  sunRadius: number;
+  moonRadius: number;
   moonOffset: ShadowPoint;
   moonScale: number;
   coverage: number;
   ringVisible: boolean;
+  coronaOpacity: number;
+  ringOpacity: number;
 }
 
 export interface SpaceMoonPosition {
@@ -68,7 +72,7 @@ export interface SpaceShadowProjectionGeometry {
   centralRadiusAtEarth: number;
 }
 
-const defaultPartialOffset = { x: 0.58, y: -0.2 };
+const defaultPartialOffset = { x: 0.36, y: -0.14 };
 const umbraRadius = 0.22;
 const penumbraRadius = 1;
 const groundSunRadius = 1.35;
@@ -79,12 +83,12 @@ export const spaceMoonOrbitInclinationRad = 0.16;
 
 const spaceModelConfig = {
   total: {
-    moonRadius: 0.24,
+    moonRadius: 0.2,
     orbitRadius: 1.65
   },
   annular: {
-    moonRadius: 0.13,
-    orbitRadius: 1.9
+    moonRadius: 0.2,
+    orbitRadius: 2.45
   }
 } as const satisfies Record<EclipseModel, { moonRadius: number; orbitRadius: number }>;
 
@@ -121,6 +125,13 @@ function roundPoint(point: ShadowPoint): ShadowPoint {
     x: Number(point.x.toFixed(2)),
     y: Number(point.y.toFixed(2))
   };
+}
+
+function getTransitOffset(time: number, moonRadius: number, impactDistance: number): number {
+  const contactDistance = groundSunRadius + moonRadius;
+  const halfChord = Math.sqrt(Math.max(0, contactDistance ** 2 - impactDistance ** 2));
+
+  return (0.5 - clamp(time, 0, 1)) * halfChord * 2;
 }
 
 export function createInitialEclipseState(overrides: Partial<SolarEclipseState> = {}): SolarEclipseState {
@@ -183,12 +194,6 @@ export function selectViewFromShadowPoint(state: SolarEclipseState, point: Shado
     partialOffset: direction,
     partialMagnitude: getPartialMagnitude(point)
   };
-}
-
-function getTransitOffset(time: number, moonScale: number): number {
-  const contactDistance = groundSunRadius + groundSunRadius * moonScale;
-
-  return (0.5 - clamp(time, 0, 1)) * contactDistance * 2;
 }
 
 function getDiscOverlapCoverage(distance: number, moonScale: number): number {
@@ -320,55 +325,72 @@ export function getShadowTrackGeometry(tangentGeometry: EclipseTangentGeometry):
   return {
     bandY: clamp(penumbraCenterY * 0.48, -spaceEarth.radius * 0.46, spaceEarth.radius * 0.46),
     partialBandScaleY: clamp(penumbraSpan * 0.52, 0.28, 0.58),
-    centralBandScaleY: clamp(centralSpan * 0.52, 0.11, 0.18)
+    centralBandScaleY: clamp(centralSpan * 0.52, 0.012, 0.18)
   };
 }
 
 export function getGroundEclipseAppearance(state: SolarEclipseState): GroundEclipseAppearance {
-  const displayTime = 0.5;
+  const sunRadius = groundSunRadius;
 
   if (state.groundMode === "annular") {
-    const moonScale = 0.72;
-    const transitOffset = getTransitOffset(displayTime, moonScale);
-    const distance = Math.abs(transitOffset);
+    const moonScale = 0.86;
+    const moonRadius = sunRadius * moonScale;
+    const moonOffset = { x: getTransitOffset(state.time, moonRadius, 0), y: 0 };
+    const distance = getPointDistance(moonOffset);
+    const annularity = clamp((sunRadius - moonRadius - distance) / (sunRadius - moonRadius), 0, 1);
 
     return {
-      moonOffset: { x: transitOffset, y: 0 },
+      sunRadius,
+      moonRadius,
+      moonOffset: roundPoint(moonOffset),
       moonScale,
       coverage: getDiscOverlapCoverage(distance, moonScale),
-      ringVisible: distance < 0.08
+      ringVisible: annularity > 0,
+      coronaOpacity: 0,
+      ringOpacity: Number((annularity * 0.28).toFixed(2))
     };
   }
 
   if (state.groundMode === "total") {
-    const moonScale = 1.06;
-    const transitOffset = getTransitOffset(displayTime, moonScale);
-    const distance = Math.abs(transitOffset);
+    const moonScale = 1.04;
+    const moonRadius = sunRadius * moonScale;
+    const moonOffset = { x: getTransitOffset(state.time, moonRadius, 0), y: 0 };
+    const distance = getPointDistance(moonOffset);
+    const totality = clamp((moonRadius - sunRadius - distance) / (moonRadius - sunRadius), 0, 1);
 
     return {
-      moonOffset: { x: transitOffset, y: 0 },
+      sunRadius,
+      moonRadius,
+      moonOffset: roundPoint(moonOffset),
       moonScale,
       coverage: getDiscOverlapCoverage(distance, moonScale),
-      ringVisible: false
+      ringVisible: false,
+      coronaOpacity: Number((totality * 0.88).toFixed(2)),
+      ringOpacity: 0
     };
   }
 
   const direction = normalizePoint(state.partialOffset);
-  const moonScale = 1.02;
-  const tangent = normalizePoint({ x: -direction.y, y: direction.x });
-  const transitOffset = getTransitOffset(displayTime, moonScale);
-  const maxPartialDepth = groundSunRadius * 0.82;
+  const moonScale = 1;
+  const moonRadius = sunRadius * moonScale;
+  const maxPartialDepth = groundSunRadius * 2.196;
   const midSeparation = groundSunRadius + groundSunRadius * moonScale - state.partialMagnitude * maxPartialDepth;
+  const transitOffset = getTransitOffset(state.time, moonRadius, midSeparation);
+  const verticalDirection = direction.y >= 0 ? 1 : -1;
   const offset = {
-    x: direction.x * midSeparation + tangent.x * transitOffset,
-    y: direction.y * midSeparation + tangent.y * transitOffset
+    x: transitOffset,
+    y: verticalDirection * midSeparation
   };
   const distance = getPointDistance(offset);
 
   return {
+    sunRadius,
+    moonRadius,
     moonOffset: roundPoint(offset),
     moonScale,
     coverage: getDiscOverlapCoverage(distance, moonScale),
-    ringVisible: false
+    ringVisible: false,
+    coronaOpacity: 0,
+    ringOpacity: 0
   };
 }

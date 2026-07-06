@@ -164,9 +164,9 @@ export const dictionaries = {
         timeline: "月球轨迹时间"
       },
       timelineLabels: {
-        start: "影带进入",
-        middle: "影带居中",
-        end: "影带离开"
+        start: "初亏",
+        middle: "食甚",
+        end: "复圆"
       },
       partialDirections: {
         upperRight: "右上",
@@ -274,9 +274,9 @@ export const dictionaries = {
         timeline: "Moon track time"
       },
       timelineLabels: {
-        start: "Shadow enters",
-        middle: "Shadow centered",
-        end: "Shadow exits"
+        start: "First contact",
+        middle: "Maximum eclipse",
+        end: "Last contact"
       },
       partialDirections: {
         upperRight: "upper right",
