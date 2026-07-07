@@ -21,7 +21,8 @@ export const learningModules: LearningModule[] = [
     id: "lunar-eclipse",
     title: { zh: "月食", en: "Lunar Eclipses" },
     description: { zh: "观察月球穿过地球影子时的几何关系。", en: "See the geometry of the Moon moving through Earth's shadow." },
-    status: "comingSoon",
+    status: "available",
+    route: "/lunar-eclipse",
     focusBodyId: "earth"
   },
   {

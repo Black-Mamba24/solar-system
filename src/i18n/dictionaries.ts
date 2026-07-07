@@ -66,6 +66,66 @@ export interface AppDictionary {
     };
     partialHint: string;
   };
+  lunarEclipse: {
+    title: string;
+    subtitle: string;
+    mainViews: {
+      space: string;
+      ground: string;
+    };
+    cases: {
+      total: string;
+      partial: string;
+    };
+    viewTitles: {
+      space: string;
+      ground: string;
+    };
+    descriptions: {
+      space: string;
+      ground: string;
+      total: string;
+      partial: string;
+      redMoon: string;
+      cause: string;
+      fullMoon: string;
+      shadowZones: string;
+    };
+    controls: {
+      rewind: string;
+      forward: string;
+      play: string;
+      pause: string;
+      speed: string;
+      slow: string;
+      normal: string;
+      timeline: string;
+    };
+    stages: {
+      P1: string;
+      U1: string;
+      U2: string;
+      MAX: string;
+      U3: string;
+      U4: string;
+      P4: string;
+    };
+    stageDetails: {
+      P1: string;
+      U1: string;
+      U2: string;
+      MAX: string;
+      U3: string;
+      U4: string;
+      P4: string;
+      partialMax: string;
+    };
+    legend: {
+      penumbra: string;
+      umbra: string;
+      redLight: string;
+    };
+  };
   controls: {
     play: string;
     pause: string;
@@ -178,6 +238,66 @@ export const dictionaries = {
       },
       partialHint: "当前偏食来自半影点击位置：月球从太阳的 {direction} 切入。"
     },
+    lunarEclipse: {
+      title: "月食",
+      subtitle: "用太空视角和地球视角观察月球穿过地球半影与本影的过程。",
+      mainViews: {
+        space: "太空视角",
+        ground: "地球视角"
+      },
+      cases: {
+        total: "月全食",
+        partial: "月偏食"
+      },
+      viewTitles: {
+        space: "太阳、地球、月球几何",
+        ground: "从地球看到的月面变化"
+      },
+      descriptions: {
+        space: "太阳、地球、月球按太阳 -> 地球 -> 月球排列。地球影锥固定沿反太阳方向延伸，月球只能靠自身轨道运动进入或离开半影与本影。",
+        ground: "地球视角展示地球影子投射到月面后的圆弧边界。半影只轻微变暗，本影明显变暗。",
+        total: "月全食发生在满月附近，当整个月球圆面完全进入地球本影时，月球表面不再接收太阳直射光。",
+        partial: "月偏食发生在满月附近，当月球只有一部分进入地球本影，而整个月球从未完全进入本影时。",
+        redMoon: "月全食阶段月球不应完全消失。暗红、铜红或橙红色来自太阳光穿过地球大气层后的折射和散射：短波蓝光被散射掉，较长波长的红橙光被折射进地球本影并照亮月面，不是月球自发光或地球发光。",
+        cause: "月食不是月球进入太阳的影子，也不是地球挡住观察者视线，而是地球挡住太阳直射到月球的光。",
+        fullMoon: "月食只可能发生在满月附近，因为此时月球位于地球背向太阳的一侧。但不是每次满月都有月食，因为月球轨道平面相对地球绕太阳公转平面有约 5 度倾角，通常满月时月球会从地球影锥的上方或下方掠过。",
+        shadowZones: "半影是太阳圆面只有一部分被地球遮挡的区域，月面变暗较轻；本影是太阳圆面被地球完全遮挡的区域，月面明显变暗。月全食时整个月球进入本影，月偏食时只有部分月球进入本影。"
+      },
+      controls: {
+        rewind: "后退",
+        forward: "前进",
+        play: "播放",
+        pause: "暂停",
+        speed: "速度",
+        slow: "慢速",
+        normal: "正常速度",
+        timeline: "月球穿越地影时间"
+      },
+      stages: {
+        P1: "P1",
+        U1: "U1",
+        U2: "U2",
+        MAX: "食甚",
+        U3: "U3",
+        U4: "U4",
+        P4: "P4"
+      },
+      stageDetails: {
+        P1: "P1 月球开始进入地球半影",
+        U1: "U1 月球开始进入地球本影",
+        U2: "U2 整个月球进入本影，月全食开始",
+        MAX: "食甚：月球最接近地球本影中心",
+        U3: "U3 月球开始离开本影，月全食结束",
+        U4: "U4 月球完全离开本影",
+        P4: "P4 月球完全离开半影",
+        partialMax: "月偏食食甚：本影只覆盖月面一部分"
+      },
+      legend: {
+        penumbra: "半影 penumbra",
+        umbra: "本影 umbra",
+        redLight: "大气折射红橙光"
+      }
+    },
     controls: {
       play: "播放",
       pause: "暂停",
@@ -287,6 +407,66 @@ export const dictionaries = {
         left: "left"
       },
       partialHint: "Current partial eclipse comes from a penumbra click: the Moon cuts in from the Sun's {direction}."
+    },
+    lunarEclipse: {
+      title: "Lunar Eclipses",
+      subtitle: "Watch the Moon move through Earth's penumbra and umbra from space and Earth views.",
+      mainViews: {
+        space: "Space view",
+        ground: "Earth view"
+      },
+      cases: {
+        total: "Total lunar eclipse",
+        partial: "Partial lunar eclipse"
+      },
+      viewTitles: {
+        space: "Sun, Earth, Moon geometry",
+        ground: "Moon disc as seen from Earth"
+      },
+      descriptions: {
+        space: "The bodies are ordered Sun -> Earth -> Moon. Earth's shadow cone stays fixed along the anti-solar direction while the Moon enters and leaves it by orbital motion.",
+        ground: "Earth view shows the circular shadow boundary projected onto the lunar disc. Penumbra dims lightly; umbra dims strongly.",
+        total: "A total lunar eclipse occurs near full Moon when the whole lunar disc enters Earth's umbra and no longer receives direct sunlight.",
+        partial: "A partial lunar eclipse occurs near full Moon when only part of the lunar disc enters Earth's umbra, so the whole Moon is never inside the umbra.",
+        redMoon: "During totality the Moon remains visible in dark red, copper, or orange-red light. That color comes from sunlight refracted and scattered by Earth's atmosphere: short blue wavelengths are scattered away while longer red-orange wavelengths bend into the umbra and illuminate the Moon. It is not self-emission.",
+        cause: "A lunar eclipse is not the Moon entering the Sun's shadow and not Earth blocking the observer's line of sight; Earth blocks direct sunlight from reaching the Moon.",
+        fullMoon: "Lunar eclipses can only occur near full Moon, when the Moon is on Earth's anti-solar side. They do not happen every full Moon because the lunar orbit is tilted by about 5 degrees to Earth's orbital plane, so the Moon usually passes above or below Earth's shadow.",
+        shadowZones: "The penumbra is where only part of the solar disc is blocked by Earth, causing mild dimming. The umbra is where the solar disc is fully blocked, causing strong dimming. A total lunar eclipse puts the whole Moon inside the umbra; a partial lunar eclipse puts only part of it inside."
+      },
+      controls: {
+        rewind: "Back",
+        forward: "Forward",
+        play: "Play",
+        pause: "Pause",
+        speed: "Speed",
+        slow: "Slow",
+        normal: "Normal",
+        timeline: "Moon through Earth's shadow"
+      },
+      stages: {
+        P1: "P1",
+        U1: "U1",
+        U2: "U2",
+        MAX: "Maximum",
+        U3: "U3",
+        U4: "U4",
+        P4: "P4"
+      },
+      stageDetails: {
+        P1: "P1 Moon begins entering Earth's penumbra",
+        U1: "U1 Moon begins entering Earth's umbra",
+        U2: "U2 Entire Moon enters the umbra; totality begins",
+        MAX: "Maximum eclipse: the Moon is closest to the umbra center",
+        U3: "U3 Moon begins leaving the umbra; totality ends",
+        U4: "U4 Moon completely leaves the umbra",
+        P4: "P4 Moon completely leaves the penumbra",
+        partialMax: "Partial maximum: the umbra covers only part of the lunar disc"
+      },
+      legend: {
+        penumbra: "Penumbra",
+        umbra: "Umbra",
+        redLight: "Atmospheric red-orange light"
+      }
     },
     controls: {
       play: "Play",

@@ -9,3 +9,5 @@ tsconfig.tsbuildinfo
 .DS_Store
 .idea/
 .superpowers/
+.codex-artifacts/
+.codegraph/

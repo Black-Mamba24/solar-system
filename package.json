@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "next dev",
+    "deploy:local": "bash scripts/deploy-local.sh",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",

@@ -27,10 +27,11 @@ describe("HomePage", () => {
       expect(screen.getByText(learningModule.title.zh)).toBeInTheDocument();
     }
 
-    expect(screen.getAllByText("即将开放")).toHaveLength(4);
+    expect(screen.getAllByText("即将开放")).toHaveLength(3);
     expect(screen.getByRole("link", { name: /进入太阳系概述/ })).toHaveAttribute("href", "/overview?lang=zh");
     expect(screen.getByRole("link", { name: /进入模块: 日食/ })).toHaveAttribute("href", "/solar-eclipse?lang=zh");
-    expect(screen.getAllByRole("link")).toHaveLength(2);
+    expect(screen.getByRole("link", { name: /进入模块: 月食/ })).toHaveAttribute("href", "/lunar-eclipse?lang=zh");
+    expect(screen.getAllByRole("link")).toHaveLength(3);
   });
 
   it("renders English text", () => {
@@ -39,8 +40,9 @@ describe("HomePage", () => {
     expect(screen.getByText("Solar System Overview")).toBeInTheDocument();
     expect(screen.getByText(dictionaries.en.homeTitle)).toBeInTheDocument();
     expect(screen.queryByText(dictionaries.en.homeEntryNote)).not.toBeInTheDocument();
-    expect(screen.getAllByText("Coming soon")).toHaveLength(4);
+    expect(screen.getAllByText("Coming soon")).toHaveLength(3);
     expect(screen.getByRole("link", { name: /Enter module: Solar Eclipses/ })).toHaveAttribute("href", "/solar-eclipse?lang=en");
+    expect(screen.getByRole("link", { name: /Enter module: Lunar Eclipses/ })).toHaveAttribute("href", "/lunar-eclipse?lang=en");
   });
 
   it("renders only the dynamic Sun hero instead of the old planet collage", () => {

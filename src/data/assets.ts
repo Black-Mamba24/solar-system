@@ -146,6 +146,30 @@ export const assetSources: AssetSource[] = [
     processing: "Equirectangular global lunar surface texture downloaded from Wikimedia Commons as an 8192x4096 JPEG for direct 3D sphere mapping and bump detail."
   },
   {
+    id: "moon-lunar-eclipse-earth-view-svs",
+    bodyId: "moon",
+    purpose: "diffuse",
+    title: "Clementine Moon Rotation Full Moon Still",
+    url: "https://svs.gsfc.nasa.gov/3444/",
+    agency: "NASA / Goddard Space Flight Center Scientific Visualization Studio",
+    usage: "NASA imagery generally available for educational and informational use with acknowledgement; do not imply endorsement.",
+    downloadedAt: "2026-07-07",
+    localPath: "/textures/lunar-eclipse-moon-nasa-svs.jpg",
+    processing: "NASA SVS Clementine full Moon still used as the Earth-view lunar eclipse animation base; the runtime crops the centered lunar disc to a square, then applies geometry-driven penumbra, umbra and atmospheric-red overlays without replacing it with procedural patches."
+  },
+  {
+    id: "moon-lunar-eclipse-blood-reference-svs",
+    bodyId: "moon",
+    purpose: "fallback",
+    title: "May 15-16, 2022 Total Lunar Eclipse Telescopic View",
+    url: "https://svs.gsfc.nasa.gov/4979/",
+    agency: "NASA / Goddard Space Flight Center Scientific Visualization Studio",
+    usage: "NASA imagery generally available for educational and informational use with acknowledgement; do not imply endorsement.",
+    downloadedAt: "2026-07-07",
+    localPath: "/textures/lunar-eclipse-blood-moon-reference-nasa-svs.jpg",
+    processing: "NASA SVS total lunar eclipse reference frame retained to calibrate the copper-red totality palette; it is not swapped in as a sudden state image, so the animation remains a continuous shadow transition over the lunar-disc base."
+  },
+  {
     id: "mars-nasa",
     bodyId: "mars",
     purpose: "diffuse",
